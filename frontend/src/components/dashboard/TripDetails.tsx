@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, 
   CheckCircle2, 
   XCircle, 
   User, 
@@ -12,6 +11,10 @@ import {
   History,
   DollarSign
 } from 'lucide-react';
+import { SectionHeader } from '../ui/SectionHeader';
+import { StatusPill } from '../ui/StatusPill';
+import { Reveal } from '../ui/Reveal';
+import { Field, SelectField } from '../ui/Field';
 
 interface TripDetailsProps {
   trip: any;
@@ -105,118 +108,92 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
   const offset = circumference - (safetyScore / 100) * circumference;
 
   return (
-    <div className="space-y-6 select-none relative text-left">
+    <Reveal className="space-y-6 select-none relative text-left">
       
       {/* Sticky top action header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-gray/50 bg-white/80 backdrop-blur sticky top-16 z-20">
-        <div className="flex items-center space-x-3.5">
-          <button
-            onClick={onClose}
-            className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-700 rounded-xl transition-all cursor-pointer"
-          >
-            <ArrowLeft className="w-4.5 h-4.5" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">
-              Trip Details Command Center
-            </h1>
-            <p className="text-xs text-slate-500 font-medium mt-1 leading-none">
-              Track every stage of a transport operation from dispatch to completion with complete operational visibility.
-            </p>
-          </div>
-        </div>
+      <SectionHeader
+        title="Trip Details Command Center"
+        subtitle="Track every stage of a transport operation from dispatch to completion with complete operational visibility."
+        onBack={onClose}
+        actions={
+          <>
+            {isDispatched && (
+              <>
+                <button
+                  onClick={() => { setShowCancelForm(false); setShowCompleteForm(true); }}
+                  className="px-3.5 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] transition-all cursor-pointer shadow-sm"
+                >
+                  Complete Trip
+                </button>
+                <button
+                  onClick={() => { setShowCompleteForm(false); setShowCancelForm(true); }}
+                  className="px-3.5 py-2 border border-rose-205 bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEF2F2]/80 text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm"
+                >
+                  Cancel Trip
+                </button>
+              </>
+            )}
 
-        <div className="flex items-center space-x-2 select-none">
-          {isDispatched && (
-            <>
-              <button
-                onClick={() => { setShowCancelForm(false); setShowCompleteForm(true); }}
-                className="px-3.5 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
-              >
-                Complete Trip
-              </button>
-              <button
-                onClick={() => { setShowCompleteForm(false); setShowCancelForm(true); }}
-                className="px-3.5 py-2 border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100/50 text-xs font-bold rounded-xl transition-all cursor-pointer"
-              >
-                Cancel Trip
-              </button>
-            </>
-          )}
+            <button
+              onClick={onEdit}
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm"
+            >
+              Edit Trip
+            </button>
 
-          <button
-            onClick={onEdit}
-            className="px-3.5 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
-          >
-            Edit Trip
-          </button>
-
-          <button
-            onClick={() => onShowToast('Exporting operational route manifest...')}
-            className="px-3.5 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
-          >
-            Export Report
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={() => onShowToast('Exporting operational route manifest...')}
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm"
+            >
+              Export Report
+            </button>
+          </>
+        }
+      />
 
       {/* Hero Trip Card */}
-      <div className="bg-white border border-border-gray p-6 rounded-2xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 relative overflow-hidden">
-        <div className="md:col-span-1 border-b md:border-b-0 md:border-r border-slate-100 pb-5 md:pb-0 md:pr-6 flex flex-col justify-between text-left space-y-3.5">
+      <div className="bg-white border border-[#E5E7EB] p-6 rounded-[16px] cc-shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 relative overflow-hidden">
+        <div className="md:col-span-1 border-b md:border-b-0 md:border-r border-[#F3F4F6] pb-5 md:pb-0 md:pr-6 flex flex-col justify-between text-left space-y-3.5">
           <div>
             <div className="flex justify-between items-center">
-              <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-wider block">Trip ID</span>
-              {trip.status === 'Completed' && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[8.5px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                  Completed
-                </span>
-              )}
-              {trip.status === 'Cancelled' && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[8.5px] font-bold bg-slate-100 text-slate-400 border border-slate-200">
-                  Cancelled
-                </span>
-              )}
-              {isDispatched && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[8.5px] font-bold bg-blue-50 text-blue-600 border border-blue-100 animate-pulse">
-                  On Route
-                </span>
-              )}
+              <span className="text-[10px] font-bold font-mono text-[#9CA3AF] uppercase tracking-wider block">Trip ID</span>
+              <StatusPill status={trip.status} pulse={isDispatched} />
             </div>
-            <h2 className="text-lg font-black text-text-dark tracking-tight leading-tight mt-1">{trip.id}</h2>
-            <p className="text-xs text-slate-500 font-semibold mt-1">{trip.route}</p>
+            <h2 className="text-lg font-black text-[#0A0A0A] tracking-tight leading-tight mt-1 font-mono">{trip.id}</h2>
+            <p className="text-xs text-[#4B5563] font-semibold mt-1">{trip.route}</p>
           </div>
 
-          <div className="space-y-1.5 text-[11px] font-semibold text-slate-600">
+          <div className="space-y-1.5 text-[11px] font-semibold text-[#4B5563]">
             <div className="flex items-center space-x-1.5">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <MapPin className="w-3.5 h-3.5 text-[#9CA3AF]" />
               <span>Region: {trip.region}</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <Layers className="w-3.5 h-3.5 text-slate-400" />
-              <span>Cargo Weight: {trip.cargoWeight} lbs</span>
+              <Layers className="w-3.5 h-3.5 text-[#9CA3AF]" />
+              <span className="font-mono tabular-nums">Cargo Weight: {trip.cargoWeight} lbs</span>
             </div>
           </div>
         </div>
 
         {/* Route Illustration Map */}
-        <div className="md:col-span-2 bg-slate-50 border border-border-gray rounded-xl p-4 flex flex-col justify-between relative overflow-hidden h-36">
+        <div className="md:col-span-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] p-4 flex flex-col justify-between relative overflow-hidden h-36">
           <svg className="absolute inset-0 w-full h-full select-none">
             <path d="M 40,70 Q 150,20 280,70" fill="none" stroke="#DBEAFE" strokeWidth="4" strokeLinecap="round" />
             <path d="M 40,70 Q 150,20 280,70" fill="none" stroke="#2563EB" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
             <circle cx="40" cy="70" r="5" fill="#2563EB" />
             <circle cx="280" cy="70" r="5" fill="#2563EB" />
           </svg>
-          <div className="absolute top-1/2 left-[40px] -translate-y-1/2 bg-white px-2 py-1 border border-border-gray rounded text-[9px] font-black shadow-sm">
+          <div className="absolute top-1/2 left-[40px] -translate-y-1/2 bg-white px-2 py-1 border border-[#E5E7EB] rounded-[8px] text-[9px] font-black cc-shadow-sm">
             Source Depot
           </div>
-          <div className="absolute top-1/2 right-[40px] -translate-y-1/2 bg-white px-2 py-1 border border-border-gray rounded text-[9px] font-black shadow-sm">
+          <div className="absolute top-1/2 right-[40px] -translate-y-1/2 bg-white px-2 py-1 border border-[#E5E7EB] rounded-[8px] text-[9px] font-black cc-shadow-sm">
             Destination Hub
           </div>
         </div>
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex space-x-1 border-b border-border-gray/50 pb-px">
+      <div className="flex space-x-1 border-b border-[#E5E7EB] pb-px">
         {[
           { id: 'overview', label: 'Overview', icon: User },
           { id: 'finance', label: 'Fuel & Expenses', icon: DollarSign },
@@ -228,10 +205,10 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 border-b-2 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none ${
+              className={`px-4 py-2.5 border-b-2 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none ${
                 isActive 
                   ? 'border-primary text-primary font-black' 
-                  : 'border-transparent text-slate-400 hover:text-slate-600'
+                  : 'border-transparent text-[#9CA3AF] hover:text-[#4B5563]'
               }`}
             >
               <TabIcon className="w-4 h-4" />
@@ -259,46 +236,46 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 
                 {/* Driver information */}
-                <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-                  <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 flex items-center">
+                <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+                  <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 flex items-center">
                     <User className="w-4 h-4 text-primary mr-1.5" /> Assigned Driver Profile
                   </h3>
 
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-[#EFF4FF] text-primary border border-[#DBE6FF] flex items-center justify-center shrink-0">
                       <User className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs text-slate-700 leading-tight">{trip.driver}</h4>
-                      <span className="text-[9.5px] text-slate-400 block font-semibold mt-0.5">CDL-A License Compliant</span>
+                      <h4 className="font-bold text-xs text-[#0A0A0A] leading-tight">{trip.driver}</h4>
+                      <span className="text-[9.5px] text-[#9CA3AF] block font-semibold mt-0.5">CDL-A License Compliant</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Safety Rating</span>
+                  <div className="pt-2 border-t border-[#F3F4F6] flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-[#6B7280] uppercase">Safety Rating</span>
                     <span className="text-xs font-black text-primary">95% (Excellent)</span>
                   </div>
                 </div>
 
                 {/* Vehicle specifications */}
-                <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-                  <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 flex items-center">
+                <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+                  <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 flex items-center">
                     <Truck className="w-4 h-4 text-primary mr-1.5" /> Assigned Vehicle specs
                   </h3>
 
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 text-primary border border-border-gray flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-[12px] bg-[#F9FAFB] text-primary border border-[#E5E7EB] flex items-center justify-center shrink-0">
                       <Truck className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs text-slate-700 leading-tight">{trip.vehicle}</h4>
-                      <span className="text-[9.5px] text-slate-400 block font-semibold mt-0.5">{trip.vehicleType}</span>
+                      <h4 className="font-bold text-xs text-[#0A0A0A] leading-tight font-mono">{trip.vehicle}</h4>
+                      <span className="text-[9.5px] text-[#9CA3AF] block font-semibold mt-0.5">{trip.vehicleType}</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Health Index</span>
-                    <span className="text-xs font-black text-emerald-600">92% Healthy</span>
+                  <div className="pt-2 border-t border-[#F3F4F6] flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-[#6B7280] uppercase">Health Index</span>
+                    <span className="text-xs font-black text-[#059669]">92% Healthy</span>
                   </div>
                 </div>
 
@@ -311,47 +288,39 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4 text-left overflow-hidden"
+                    className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4 text-left overflow-hidden"
                   >
-                    <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 flex items-center text-primary">
+                    <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 flex items-center text-primary">
                       <CheckCircle2 className="w-4.5 h-4.5 mr-1.5" /> Complete Trip Wizard
                     </h3>
                     
                     <form onSubmit={handleCompleteSubmit} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Final Odometer Reading (mi)</label>
-                          <input 
-                            type="number" 
-                            value={finalOdo} 
-                            onChange={(e) => setFinalOdo(e.target.value)}
-                            className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Fuel Consumed (Gal)</label>
-                          <input 
-                            type="number" 
-                            value={fuelConsumed} 
-                            onChange={(e) => setFuelConsumed(e.target.value)}
-                            className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Delivery Notes / Comments</label>
-                        <textarea 
-                          placeholder="e.g. Delivered on time. Container seal verified secure."
-                          value={notes} 
-                          onChange={(e) => setNotes(e.target.value)}
-                          className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none h-12"
+                        <Field 
+                          label="Final Odometer Reading (mi)"
+                          type="number" 
+                          value={finalOdo} 
+                          onChange={setFinalOdo}
+                          required
+                        />
+                        <Field 
+                          label="Total Fuel Consumed (Gal)"
+                          type="number" 
+                          value={fuelConsumed} 
+                          onChange={setFuelConsumed}
+                          required
                         />
                       </div>
 
-                      <div className="flex items-center space-x-2 text-xs font-semibold text-slate-700 bg-slate-50/50 p-2.5 border border-border-gray rounded-xl">
+                      <Field 
+                        label="Delivery Notes / Comments"
+                        placeholder="e.g. Delivered on time. Container seal verified secure."
+                        value={notes} 
+                        onChange={setNotes}
+                        textarea
+                      />
+
+                      <div className="flex items-center space-x-2 text-xs font-semibold text-[#4B5563] bg-[#F9FAFB]/50 p-2.5 border border-[#E5E7EB] rounded-[12px]">
                         <input 
                           type="checkbox" 
                           checked={deliverySign} 
@@ -361,17 +330,17 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                         <span>I confirm that the customer signature for delivery receipt has been uploaded.</span>
                       </div>
 
-                      <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                      <div className="flex justify-end space-x-2 pt-2 border-t border-[#F3F4F6]">
                         <button
                           type="button"
                           onClick={() => setShowCompleteForm(false)}
-                          className="px-3.5 py-2 border border-border-gray bg-white text-slate-600 text-xs font-bold rounded-xl cursor-pointer"
+                          className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#6B7280] text-xs font-bold rounded-[12px] cursor-pointer"
                         >
                           Close
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
+                          className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] shadow-sm cursor-pointer cc-shadow-sm"
                         >
                           Complete Trip Now
                         </button>
@@ -385,49 +354,45 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4 text-left overflow-hidden"
+                    className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4 text-left overflow-hidden"
                   >
-                    <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 flex items-center text-rose-500">
+                    <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 flex items-center text-[#DC2626]">
                       <XCircle className="w-4.5 h-4.5 mr-1.5" /> Cancel Trip Wizard
                     </h3>
 
                     <form onSubmit={handleCancelSubmit} className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cancellation Reason Category</label>
-                        <select 
-                          value={cancelReason} 
-                          onChange={(e) => setCancelReason(e.target.value)}
-                          className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                        >
-                          <option value="Mechanical Failure">Mechanical Failure / Vehicle Breakdown</option>
-                          <option value="Traffic Lock">Severe Weather / Road Closures</option>
-                          <option value="Customer Request">Customer Request Cancellation</option>
-                          <option value="Staff Shortage">Staff Shortage / Driver Shift Delay</option>
-                        </select>
-                      </div>
+                      <SelectField 
+                        label="Cancellation Reason Category"
+                        value={cancelReason} 
+                        onChange={setCancelReason}
+                        options={[
+                          { value: 'Mechanical Failure', label: 'Mechanical Failure / Vehicle Breakdown' },
+                          { value: 'Traffic Lock', label: 'Severe Weather / Road Closures' },
+                          { value: 'Customer Request', label: 'Customer Request Cancellation' },
+                          { value: 'Staff Shortage', label: 'Staff Shortage / Driver Shift Delay' }
+                        ]}
+                      />
 
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cancellation Comments</label>
-                        <textarea 
-                          placeholder="e.g. Engine coolant leaking. Tow scheduled."
-                          value={cancelComments} 
-                          onChange={(e) => setCancelComments(e.target.value)}
-                          className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none h-12"
-                          required
-                        />
-                      </div>
+                      <Field 
+                        label="Cancellation Comments"
+                        placeholder="e.g. Engine coolant leaking. Tow scheduled."
+                        value={cancelComments} 
+                        onChange={setCancelComments}
+                        textarea
+                        required
+                      />
 
-                      <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                      <div className="flex justify-end space-x-2 pt-2 border-t border-[#F3F4F6]">
                         <button
                           type="button"
                           onClick={() => setShowCancelForm(false)}
-                          className="px-3.5 py-2 border border-border-gray bg-white text-slate-600 text-xs font-bold rounded-xl cursor-pointer"
+                          className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#6B7280] text-xs font-bold rounded-[12px] cursor-pointer"
                         >
                           Close
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
+                          className="px-4 py-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-bold rounded-[12px] shadow-sm cursor-pointer cc-shadow-sm"
                         >
                           Cancel Trip Now
                         </button>
@@ -443,41 +408,41 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
             <div className="space-y-6 text-left">
               
               {/* Driver Safety Score Circle */}
-              <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-center space-y-4">
-                <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 text-left">
+              <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-center space-y-4">
+                <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 text-left">
                   Operator Safety Dials
                 </h3>
 
                 <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="48" cy="48" r={radius} className="stroke-slate-100" strokeWidth="5.5" fill="transparent" />
+                    <circle cx="48" cy="48" r={radius} className="stroke-[#F3F4F6]" strokeWidth="5.5" fill="transparent" />
                     <circle cx="48" cy="48" r={radius} className="stroke-primary" strokeWidth="5.5" fill="transparent" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center select-none leading-none">
-                    <span className="text-lg font-black text-text-dark">{safetyScore}%</span>
-                    <span className="text-[8px] text-slate-400 font-bold uppercase mt-1">Safety Rating</span>
+                    <span className="text-lg font-black text-[#0A0A0A] font-mono tabular-nums">{safetyScore}%</span>
+                    <span className="text-[8px] text-[#9CA3AF] font-bold uppercase mt-1">Safety Rating</span>
                   </div>
                 </div>
 
-                <p className="text-[10px] font-bold text-slate-400 leading-normal">
+                <p className="text-[10px] font-bold text-[#9CA3AF] leading-normal">
                   Excellent defensive driving logs recorded during last dispatch.
                 </p>
               </div>
 
               {/* AI Performance Insights */}
-              <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-left space-y-4">
-                <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2 flex items-center">
+              <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-left space-y-4">
+                <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2 flex items-center">
                   <Sparkles className="w-4 h-4 text-primary mr-1.5" /> AI Route Insights
                 </h3>
                 
                 <div className="space-y-3">
-                  <div className="p-3 bg-blue-50/50 border border-primary/20 rounded-xl flex items-start space-x-2 text-slate-600">
+                  <div className="p-3 bg-[#EFF4FF] border border-[#DBE6FF] rounded-[12px] flex items-start space-x-2 text-[#4B5563]">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0 mt-1.5" />
                     <span className="text-[10.5px] leading-normal font-semibold">
                       Trip is progressing on schedule. Expected delivery arrival in 48 minutes.
                     </span>
                   </div>
-                  <div className="p-3 bg-blue-50/50 border border-primary/20 rounded-xl flex items-start space-x-2 text-slate-600">
+                  <div className="p-3 bg-[#EFF4FF] border border-[#DBE6FF] rounded-[12px] flex items-start space-x-2 text-[#4B5563]">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full shrink-0 mt-1.5" />
                     <span className="text-[10.5px] leading-normal font-semibold">
                       Suggested refueling hub: Pilot Station 12 miles ahead offers the best MPG fleet price.
@@ -502,78 +467,78 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
               
               {/* Fuel Logs Table */}
-              <div className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between min-h-[300px]">
+              <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden flex flex-col justify-between min-h-[300px]">
                 <div>
-                  <div className="p-4 border-b border-slate-100">
-                    <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase">Operational Refueling Logs</h3>
+                  <div className="p-4 border-b border-[#F3F4F6]">
+                    <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase">Operational Refueling Logs</h3>
                   </div>
 
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-border-gray text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
-                        <th className="p-3 pl-5">Date</th>
-                        <th className="p-3">Refueling Station</th>
-                        <th className="p-3">Fuel Qty</th>
+                      <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[9.5px] text-[#9CA3AF] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-5 text-left">Date</th>
+                        <th className="p-3 text-left">Refueling Station</th>
+                        <th className="p-3 text-left">Fuel Qty</th>
                         <th className="p-3 text-right pr-5">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-[10.5px] font-semibold text-slate-700">
+                    <tbody className="divide-y divide-[#F3F4F6] text-[10.5px] font-semibold text-[#4B5563]">
                       <tr>
                         <td className="p-3 pl-5">2026-07-12</td>
                         <td className="p-3">Love's Travel Stop #102</td>
                         <td className="p-3">45 Gal</td>
-                        <td className="p-3 text-right pr-5 font-mono text-slate-900">$162.00</td>
+                        <td className="p-3 text-right pr-5 font-mono text-[#0A0A0A]">$162.00</td>
                       </tr>
                       <tr>
                         <td className="p-3 pl-5">2026-07-11</td>
                         <td className="p-3">Pilot Refueling depot</td>
                         <td className="p-3">50 Gal</td>
-                        <td className="p-3 text-right pr-5 font-mono text-slate-900">$180.00</td>
+                        <td className="p-3 text-right pr-5 font-mono text-[#0A0A0A]">$180.00</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-600">
+                <div className="p-4 bg-[#F9FAFB] border-t border-[#E5E7EB] flex justify-between items-center text-xs font-bold text-[#4B5563]">
                   <span>Total Refueling Costs</span>
                   <span className="font-mono text-primary text-sm font-black">$342.00</span>
                 </div>
               </div>
 
               {/* Expense Logs */}
-              <div className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between min-h-[300px]">
+              <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden flex flex-col justify-between min-h-[300px]">
                 <div>
-                  <div className="p-4 border-b border-slate-100">
-                    <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase">Tolls & Maintenance Expenses</h3>
+                  <div className="p-4 border-b border-[#F3F4F6]">
+                    <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase">Tolls & Maintenance Expenses</h3>
                   </div>
 
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-border-gray text-[9.5px] text-slate-400 font-bold uppercase tracking-wider">
-                        <th className="p-3 pl-5">Expense Type</th>
-                        <th className="p-3">Date</th>
-                        <th className="p-3">Category</th>
+                      <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[9.5px] text-[#9CA3AF] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-5 text-left">Expense Type</th>
+                        <th className="p-3 text-left">Date</th>
+                        <th className="p-3 text-left">Category</th>
                         <th className="p-3 text-right pr-5">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-[10.5px] font-semibold text-slate-700">
+                    <tbody className="divide-y divide-[#F3F4F6] text-[10.5px] font-semibold text-[#4B5563]">
                       <tr>
                         <td className="p-3 pl-5">Midwest Turnpike Tolls</td>
                         <td className="p-3">2026-07-12</td>
                         <td className="p-3">Tolls</td>
-                        <td className="p-3 text-right pr-5 font-mono text-slate-900">$45.00</td>
+                        <td className="p-3 text-right pr-5 font-mono text-[#0A0A0A]">$45.00</td>
                       </tr>
                       <tr>
                         <td className="p-3 pl-5">Brake Pad Fluid Check</td>
                         <td className="p-3">2026-07-10</td>
                         <td className="p-3">Maintenance</td>
-                        <td className="p-3 text-right pr-5 font-mono text-slate-900">$85.00</td>
+                        <td className="p-3 text-right pr-5 font-mono text-[#0A0A0A]">$85.00</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-600">
+                <div className="p-4 bg-[#F9FAFB] border-t border-[#E5E7EB] flex justify-between items-center text-xs font-bold text-[#4B5563]">
                   <span>Total Non-Fuel Expenses</span>
                   <span className="font-mono text-primary text-sm font-black">$130.00</span>
                 </div>
@@ -582,26 +547,26 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
             </div>
 
             {/* Expense Breakdown Donut Chart */}
-            <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-left max-w-sm">
-              <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2">
+            <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-left max-w-sm">
+              <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2">
                 Operational Expense Split
               </h3>
               <div className="pt-4 flex items-center justify-between">
                 <div className="w-1/2">
                   <DonutChart fuel={342} tolls={45} maintenance={85} misc={0} />
                 </div>
-                <div className="w-1/2 text-xs font-semibold text-slate-600 space-y-1.5">
+                <div className="w-1/2 text-xs font-semibold text-[#4B5563] space-y-1.5">
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Fuel</span>
-                    <span className="font-mono font-bold">$342.00</span>
+                    <span className="text-[#9CA3AF] font-medium">Fuel</span>
+                    <span className="font-mono font-bold text-[#0A0A0A]">$342.00</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Tolls</span>
-                    <span className="font-mono font-bold">$45.00</span>
+                    <span className="text-[#9CA3AF] font-medium">Tolls</span>
+                    <span className="font-mono font-bold text-[#0A0A0A]">$45.00</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Maint.</span>
-                    <span className="font-mono font-bold">$85.00</span>
+                    <span className="text-[#9CA3AF] font-medium">Maint.</span>
+                    <span className="font-mono font-bold text-[#0A0A0A]">$85.00</span>
                   </div>
                 </div>
               </div>
@@ -617,9 +582,9 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-left space-y-4"
+            className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-left space-y-4"
           >
-            <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2">Trip Dispatch Timeline</h3>
+            <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2">Trip Dispatch Timeline</h3>
             
             <div className="relative pl-5 space-y-5 border-l-2 border-primary/10 max-w-xl">
               {[
@@ -627,12 +592,12 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                 { time: '09:00 AM', event: 'Asset Dispatched from Terminal', desc: 'Vehicle checked out and driver CDL confirmed.', user: 'Fleet Manager (Acme)' },
                 { time: '11:15 AM', event: 'Refueling Logged', desc: '45 gallons added at Love\'s Stop #102.', user: trip.driver }
               ].map((item, idx) => (
-                <div key={idx} className="relative text-xs font-semibold text-slate-700">
+                <div key={idx} className="relative text-xs font-semibold text-[#4B5563]">
                   <div className="absolute -left-[26px] top-1 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full animate-ping" />
                   <div className="absolute -left-[26px] top-1 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full" />
-                  <span className="text-sm font-bold text-slate-800 block leading-tight">{item.event}</span>
-                  <p className="text-[11px] text-slate-500 font-medium mt-1 leading-normal">{item.desc}</p>
-                  <div className="flex space-x-2 text-[9px] text-slate-400 font-mono mt-1">
+                  <span className="text-sm font-bold text-[#0A0A0A] block leading-tight">{item.event}</span>
+                  <p className="text-[11px] text-[#6B7280] font-medium mt-1 leading-normal">{item.desc}</p>
+                  <div className="flex space-x-2 text-[9px] text-[#9CA3AF] font-mono mt-1">
                     <span>{item.time}</span>
                     <span>•</span>
                     <span>Operator: {item.user}</span>
@@ -645,6 +610,6 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
 
       </AnimatePresence>
 
-    </div>
+    </Reveal>
   );
 };

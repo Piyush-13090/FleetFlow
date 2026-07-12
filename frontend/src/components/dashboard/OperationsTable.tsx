@@ -97,14 +97,14 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({
   // Loading skeleton state
   if (isLoading) {
     return (
-      <div className="bg-white border border-border-gray rounded-2xl p-5 shadow-sm mt-6">
+      <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-5 cc-shadow-sm mt-6">
         <div className="flex justify-between items-center mb-4">
           <div className="w-48 h-5 rounded bg-slate-100 animate-pulse" />
           <div className="w-24 h-8 rounded bg-slate-100 animate-pulse" />
         </div>
         <div className="space-y-3.5">
           {Array.from({ length: 5 }).map((_, idx) => (
-            <div key={idx} className="flex justify-between items-center p-3 border-b border-border-gray/50">
+            <div key={idx} className="flex justify-between items-center p-3 border-b border-[#E5E7EB]/50">
               <div className="w-1/4 h-4 rounded bg-slate-100 animate-pulse" />
               <div className="w-1/6 h-4 rounded bg-slate-100 animate-pulse" />
               <div className="w-1/5 h-4 rounded bg-slate-100 animate-pulse" />
@@ -120,18 +120,18 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({
   // Empty State View
   if (rows.length === 0) {
     return (
-      <div className="bg-white border border-border-gray rounded-2xl p-10 shadow-sm mt-6 text-center select-none">
+      <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-10 cc-shadow-sm mt-6 text-center select-none">
         <div className="max-w-md mx-auto py-8 flex flex-col items-center">
-          <div className="w-20 h-20 rounded-2xl bg-blue-50 text-primary flex items-center justify-center mb-6 shadow-sm">
+          <div className="w-20 h-20 rounded-[16px] bg-blue-50 text-primary flex items-center justify-center mb-6 cc-shadow-sm">
             <Inbox className="w-10 h-10" strokeWidth={1.5} />
           </div>
-          <h3 className="text-base font-bold text-text-dark">No Active Trips</h3>
+          <h3 className="text-base cc-display font-semibold text-[#0A0A0A]">No Active Trips</h3>
           <p className="text-xs text-slate-500 mt-2 leading-relaxed">
             There are no active trips matching your current query. Create your first dispatch or reset filters to start tracking operations.
           </p>
           <button
             onClick={onCreateTripClick}
-            className="mt-6 px-4 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+            className="mt-6 px-4 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-semibold rounded-xl cc-shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
           >
             Create Trip
           </button>
@@ -141,13 +141,13 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({
   }
 
   return (
-    <div className="bg-white border border-border-gray rounded-2xl shadow-sm mt-6 overflow-hidden select-none">
-      <div className="px-5 py-4 border-b border-border-gray/70 flex items-center justify-between">
+    <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm mt-6 overflow-hidden select-none">
+      <div className="px-5 py-4 border-b border-[#E5E7EB]/70 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-text-dark">Operations Overview</h3>
+          <h3 className="text-sm cc-display font-semibold text-[#0A0A0A]">Operations Overview</h3>
           <p className="text-[10px] text-slate-500 font-medium">Real-time status of dispatch activities</p>
         </div>
-        <div className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-border-gray px-2 py-1 rounded-lg">
+        <div className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-[#E5E7EB] px-2 py-1 rounded-lg">
           Showing {rows.length} Active Records
         </div>
       </div>
@@ -155,7 +155,7 @@ export const OperationsTable: React.FC<OperationsTableProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="bg-slate-50 border-b border-border-gray/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <tr className="bg-slate-50 border-b border-[#E5E7EB]/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <th className="py-3 px-5">Vehicle</th>
               <th className="py-3 px-5">Driver</th>
               <th className="py-3 px-5">Current Route</th>

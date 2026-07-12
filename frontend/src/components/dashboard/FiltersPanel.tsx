@@ -54,12 +54,12 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
   ).length;
 
   return (
-    <div className="bg-white border border-border-gray p-4 rounded-2xl flex flex-wrap items-center gap-3.5 shadow-sm sticky top-16 z-15 backdrop-blur-md select-none">
-      <div className="flex items-center space-x-2 text-slate-800 border-r border-border-gray pr-3.5 py-1">
-        <Filter className="w-4 h-4 text-primary" />
-        <span className="text-xs font-bold">Filters</span>
+    <div className="cc-body bg-white border border-[#E5E7EB] p-3.5 rounded-[16px] flex flex-wrap items-center gap-3 cc-shadow-sm relative z-20 select-none">
+      <div className="flex items-center gap-2 text-[#0A0A0A] border-r border-[#E5E7EB] pr-3.5 py-1">
+        <Filter className="w-4 h-4 text-[#2563EB]" />
+        <span className="text-[13px] font-semibold">Filters</span>
         {activeFiltersCount > 0 && (
-          <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full">
+          <span className="px-2 py-0.5 bg-[#2563EB] text-white text-[10px] font-bold rounded-full tabular-nums">
             {activeFiltersCount}
           </span>
         )}
@@ -69,8 +69,8 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
       <div className="relative">
         <button
           onClick={() => toggleDropdown('type')}
-          className={`flex items-center justify-between space-x-2 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer min-w-[125px] ${
-            filters.type !== 'All Types' ? 'border-primary bg-primary/5 text-primary' : 'border-border-gray'
+          className={`flex items-center justify-between space-x-2 cc-focus bg-[#F9FAFB] border px-3 py-2 rounded-[12px] text-[12px] font-semibold text-[#4B5563] hover:bg-[#F3F4F6] transition-colors min-w-[125px] ${
+            filters.type !== 'All Types' ? 'border-[#C7D2FE] bg-[#EFF4FF] text-[#2563EB]' : 'border-[#E5E7EB]'
           }`}
         >
           <span className="truncate">{filters.type}</span>
@@ -107,8 +107,8 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
       <div className="relative">
         <button
           onClick={() => toggleDropdown('status')}
-          className={`flex items-center justify-between space-x-2 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer min-w-[130px] ${
-            filters.status !== 'All Statuses' ? 'border-primary bg-primary/5 text-primary' : 'border-border-gray'
+          className={`flex items-center justify-between space-x-2 cc-focus bg-[#F9FAFB] border px-3 py-2 rounded-[12px] text-[12px] font-semibold text-[#4B5563] hover:bg-[#F3F4F6] transition-colors min-w-[130px] ${
+            filters.status !== 'All Statuses' ? 'border-[#C7D2FE] bg-[#EFF4FF] text-[#2563EB]' : 'border-[#E5E7EB]'
           }`}
         >
           <span className="truncate">{filters.status}</span>
@@ -145,8 +145,8 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
       <div className="relative">
         <button
           onClick={() => toggleDropdown('region')}
-          className={`flex items-center justify-between space-x-2 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer min-w-[125px] ${
-            filters.region !== 'All Regions' ? 'border-primary bg-primary/5 text-primary' : 'border-border-gray'
+          className={`flex items-center justify-between space-x-2 cc-focus bg-[#F9FAFB] border px-3 py-2 rounded-[12px] text-[12px] font-semibold text-[#4B5563] hover:bg-[#F3F4F6] transition-colors min-w-[125px] ${
+            filters.region !== 'All Regions' ? 'border-[#C7D2FE] bg-[#EFF4FF] text-[#2563EB]' : 'border-[#E5E7EB]'
           }`}
         >
           <span className="truncate">{filters.region}</span>
@@ -183,8 +183,8 @@ export const FiltersPanel: React.FC<FiltersPanelProps> = ({
       <div className="relative">
         <button
           onClick={() => toggleDropdown('driver')}
-          className={`flex items-center justify-between space-x-2 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100/50 transition-all duration-200 cursor-pointer min-w-[140px] ${
-            filters.driver !== 'All Drivers' ? 'border-primary bg-primary/5 text-primary' : 'border-border-gray'
+          className={`flex items-center justify-between space-x-2 cc-focus bg-[#F9FAFB] border px-3 py-2 rounded-[12px] text-[12px] font-semibold text-[#4B5563] hover:bg-[#F3F4F6] transition-colors min-w-[140px] ${
+            filters.driver !== 'All Drivers' ? 'border-[#C7D2FE] bg-[#EFF4FF] text-[#2563EB]' : 'border-[#E5E7EB]'
           }`}
         >
           <span className="truncate">{filters.driver}</span>

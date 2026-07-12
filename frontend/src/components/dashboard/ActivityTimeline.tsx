@@ -80,17 +80,18 @@ export const ActivityTimeline: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm select-none h-full flex flex-col justify-between">
-      <div>
-        <div className="flex items-center space-x-2 mb-4">
-          <div className="p-1.5 rounded-lg bg-blue-50 text-primary">
-            <Clock className="w-4 h-4" />
+    <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm select-none">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-[10px] bg-[#EFF4FF] border border-[#DBE6FF] text-[#2563EB] flex items-center justify-center">
+            <Clock className="w-4.5 h-4.5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-text-dark">Recent Activity</h3>
-            <p className="text-[10px] text-slate-500 font-medium">Real-time dispatch timeline logs</p>
+            <h3 className="text-[15px] cc-display font-semibold text-[#0A0A0A] leading-tight">Recent Activity</h3>
+            <p className="text-[11px] text-[#6B7280]">Real-time dispatch timeline logs</p>
           </div>
         </div>
+<<<<<<< HEAD
 
         <div className="relative pl-6 space-y-4 pt-1 text-left min-h-[150px]">
           {/* Vertical blue connector line */}
@@ -146,11 +147,46 @@ export const ActivityTimeline: React.FC = () => {
 
       <div className="mt-4 pt-3 border-t border-border-gray/50 text-center">
         <span 
+=======
+        <button
+>>>>>>> fc83281 (Resolve merge conflicts after pull)
           onClick={() => alert('Full operational audit logs opened.')}
-          className="text-[9.5px] font-black uppercase text-primary hover:underline cursor-pointer"
+          className="cc-focus text-[11px] font-semibold text-[#2563EB] hover:underline hidden sm:block"
         >
           View Full Audit Trail
-        </span>
+        </button>
+      </div>
+
+      {/* Event grid — fills the wide column */}
+      <div className="grid sm:grid-cols-2 gap-3 text-left">
+        {activityEvents.map((evt, idx) => {
+          const Icon = evt.icon;
+          return (
+            <motion.div
+              key={evt.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              className="flex items-start gap-3 p-3 rounded-[12px] border border-[#EEF1F4] bg-[#FBFCFD] hover:bg-white hover:border-[#E5E7EB] transition-colors group"
+            >
+              <div
+                className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
+                style={{ backgroundColor: evt.bgColor, color: evt.color }}
+              >
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-[13px] cc-display font-semibold text-[#0A0A0A] leading-tight truncate">
+                    {evt.title}
+                  </span>
+                  <span className="text-[10px] text-[#9CA3AF] font-medium shrink-0 tabular-nums">{evt.time}</span>
+                </div>
+                <p className="text-[12px] text-[#6B7280] leading-snug mt-0.5">{evt.desc}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

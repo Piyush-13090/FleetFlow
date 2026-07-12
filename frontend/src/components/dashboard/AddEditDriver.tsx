@@ -16,6 +16,10 @@ import {
 } from 'lucide-react';
 import type { DriverData } from './DriverManagement';
 import { apiFetch } from '../../lib/api';
+import { SectionHeader } from '../ui/SectionHeader';
+import { Field, SelectField } from '../ui/Field';
+import { ModalShell } from '../ui/ModalShell';
+import { Reveal } from '../ui/Reveal';
 
 interface AddEditDriverProps {
   initialData?: DriverData | null;
@@ -312,48 +316,44 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
   const readinessOffset = readinessCircumference - (readinessScore / 100) * readinessCircumference;
 
   return (
-    <div className="space-y-6 select-none relative text-left">
+    <Reveal className="space-y-6 select-none relative text-left">
       
       {/* Sticky top action header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-gray/50 bg-white/80 backdrop-blur sticky top-16 z-20">
-        <div>
-          <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">
-            {isEditMode ? 'Edit Driver Profile' : 'Register New Driver'}
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-1 leading-none">
-            Create and manage professional driver profiles with complete compliance and safety information.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2.5">
-          <button
-            onClick={onClose}
-            className="px-3.5 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onShowToast('Draft saved successfully.')}
-            className="px-3.5 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
-          >
-            Save Draft
-          </button>
-          <button
-            onClick={handleSubmitForm}
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-primary hover:bg-primary/95 disabled:bg-slate-300 text-white text-xs font-bold rounded-xl shadow-sm hover:scale-102 transition-all cursor-pointer flex items-center space-x-1.5"
-          >
-            {isSubmitting ? (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <span>{isEditMode ? 'Save Profile' : 'Register Driver'}</span>
-            )}
-          </button>
-        </div>
-      </div>
+      <SectionHeader
+        title={isEditMode ? 'Edit Driver Profile' : 'Register New Driver'}
+        subtitle="Create and manage professional driver profiles with complete compliance and safety information."
+        onBack={onClose}
+        actions={
+          <>
+            <button
+              onClick={onClose}
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onShowToast('Draft saved successfully.')}
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer"
+            >
+              Save Draft
+            </button>
+            <button
+              onClick={handleSubmitForm}
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] text-white text-xs font-bold rounded-[12px] cc-shadow-sm hover:scale-[1.02] transition-all cursor-pointer flex items-center space-x-1.5"
+            >
+              {isSubmitting ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span>{isEditMode ? 'Save Profile' : 'Register Driver'}</span>
+              )}
+            </button>
+          </>
+        }
+      />
 
       {/* Stepper progress indicator ribbon */}
-      <div className="max-w-4xl mx-auto bg-white border border-border-gray p-4 rounded-2xl flex items-center justify-between shadow-sm">
+      <div className="max-w-4xl mx-auto bg-white border border-[#E5E7EB] p-4 rounded-[16px] flex items-center justify-between cc-shadow-sm">
         {[
           { step: 1, label: 'Personal Details' },
           { step: 2, label: 'License Info' },
@@ -368,19 +368,23 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               <button
                 onClick={() => currentStep > item.step && setCurrentStep(item.step)}
                 disabled={currentStep < item.step}
-                className="flex items-center space-x-2 focus:outline-none cursor-pointer text-left"
+                className="flex items-center space-x-2.5 focus:outline-none cursor-pointer text-left"
               >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black transition-all ${
-                  isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : isActive ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'
+                <div className={`w-8 h-8 rounded-[10px] flex items-center justify-center text-xs font-black transition-all ${
+                  isDone 
+                    ? 'bg-[#ECFDF5] text-[#059669] border border-[#C7F0DC]' 
+                    : isActive 
+                      ? 'bg-primary text-white ring-4 ring-primary/10' 
+                      : 'bg-[#F3F4F6] text-[#9CA3AF]'
                 }`}>
-                  {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : item.step}
+                  {isDone ? <Check className="w-4 h-4" strokeWidth={3} /> : item.step}
                 </div>
-                <span className={`text-xs font-bold ${isActive ? 'text-primary' : 'text-slate-500'}`}>
+                <span className={`text-xs font-bold transition-colors ${isActive ? 'text-primary' : 'text-[#4B5563]'}`}>
                   {item.label}
                 </span>
               </button>
               {item.step < 4 && (
-                <div className="flex-1 mx-4 h-0.5 bg-slate-100 hidden sm:block" />
+                <div className="flex-1 mx-4 h-0.5 bg-[#F3F4F6] hidden sm:block" />
               )}
             </div>
           );
@@ -398,150 +402,104 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               {/* STEP 1: PERSONAL INFORMATION */}
               {currentStep === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-text-dark border-b border-slate-100 pb-2 flex items-center">
+                  <h3 className="text-sm font-bold text-[#0A0A0A] border-b border-[#F3F4F6] pb-2 flex items-center">
                     <User className="w-4 h-4 text-primary mr-1.5" /> Step 1 — Personal Information
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Driver Full Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Robert Johnson" 
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className={`w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none transition-all input-glow ${
-                          shakeFields.name ? 'border-rose-500 animate-shake' : 'border-border-gray'
-                        }`}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Employee ID</label>
-                      <input 
-                        type="text" 
-                        value={empId}
-                        onChange={(e) => setEmpId(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
-                      <input 
-                        type="text" 
-                        placeholder="+1 (555) 010-9090" 
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className={`w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none transition-all input-glow ${
-                          shakeFields.phone ? 'border-rose-500 animate-shake' : 'border-border-gray'
-                        }`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                      <input 
-                        type="email" 
-                        placeholder="e.g. robert@fleetflow.io" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Date of Birth</label>
-                      <input 
-                        type="date" 
-                        value={dob}
-                        onChange={(e) => setDob(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gender</label>
-                      <select 
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Street Address</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 120 Logistics Way" 
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
+                    <Field 
+                      label="Driver Full Name" 
+                      placeholder="e.g. Robert Johnson" 
+                      value={name}
+                      onChange={setName}
+                      error={shakeFields.name ? 'Driver Full Name is required.' : undefined}
+                      required
+                    />
+                    <Field 
+                      label="Employee ID" 
+                      value={empId}
+                      onChange={setEmpId}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">City</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Austin" 
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">State</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. TX" 
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Postal / ZIP Code</label>
-                      <input 
-                        type="text" 
-                        placeholder="ZIP" 
-                        value={zip}
-                        onChange={(e) => setZip(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field 
+                      label="Phone Number" 
+                      placeholder="+1 (555) 010-9090" 
+                      value={phone}
+                      onChange={setPhone}
+                      error={shakeFields.phone ? 'Phone Number is invalid.' : undefined}
+                    />
+                    <Field 
+                      label="Email Address" 
+                      type="email" 
+                      placeholder="e.g. robert@fleetflow.io" 
+                      value={email}
+                      onChange={setEmail}
+                    />
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 space-y-3">
-                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider leading-none">Emergency Contact</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field 
+                      label="Date of Birth" 
+                      type="date" 
+                      value={dob}
+                      onChange={setDob}
+                    />
+                    <SelectField 
+                      label="Gender"
+                      value={gender}
+                      onChange={setGender}
+                      options={[
+                        { value: 'Male', label: 'Male' },
+                        { value: 'Female', label: 'Female' }
+                      ]}
+                    />
+                  </div>
+
+                  <Field 
+                    label="Street Address" 
+                    placeholder="e.g. 120 Logistics Way" 
+                    value={address}
+                    onChange={setAddress}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Field 
+                      label="City" 
+                      placeholder="e.g. Austin" 
+                      value={city}
+                      onChange={setCity}
+                    />
+                    <Field 
+                      label="State" 
+                      placeholder="e.g. TX" 
+                      value={state}
+                      onChange={setState}
+                    />
+                    <Field 
+                      label="Postal / ZIP Code" 
+                      placeholder="ZIP" 
+                      value={zip}
+                      onChange={setZip}
+                    />
+                  </div>
+
+                  <div className="pt-3 border-t border-[#F3F4F6] space-y-3">
+                    <h4 className="text-[10px] font-black uppercase text-[#9CA3AF] tracking-wider leading-none">Emergency Contact</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Contact Full Name</label>
-                        <input 
-                          type="text" 
-                          placeholder="e.g. Mary Johnson (Spouse)" 
-                          value={emergencyName}
-                          onChange={(e) => setEmergencyName(e.target.value)}
-                          className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Contact Number</label>
-                        <input 
-                          type="text" 
-                          placeholder="+1 (555) 010-9091" 
-                          value={emergencyPhone}
-                          onChange={(e) => setEmergencyPhone(e.target.value)}
-                          className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                        />
-                      </div>
+                      <Field 
+                        label="Contact Full Name" 
+                        placeholder="e.g. Mary Johnson (Spouse)" 
+                        value={emergencyName}
+                        onChange={setEmergencyName}
+                      />
+                      <Field 
+                        label="Contact Number" 
+                        placeholder="+1 (555) 010-9091" 
+                        value={emergencyPhone}
+                        onChange={setEmergencyPhone}
+                      />
                     </div>
                   </div>
                 </motion.div>
@@ -550,121 +508,95 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               {/* STEP 2: LICENSE INFORMATION */}
               {currentStep === 2 && (
                 <motion.div key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-text-dark border-b border-slate-100 pb-2 flex items-center">
+                  <h3 className="text-sm font-bold text-[#0A0A0A] border-b border-[#F3F4F6] pb-2 flex items-center">
                     <SlidersHorizontal className="w-4 h-4 text-primary mr-1.5" /> Step 2 — Commercial License Details
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center">
-                        License Number
-                        {isLicenseUnique === true && <span className="text-emerald-600 font-bold ml-1.5">✓ Unique</span>}
-                        {isLicenseUnique === false && <span className="text-rose-500 font-bold ml-1.5">✗ Duplicate</span>}
-                      </label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. CDL-TX89012" 
-                        value={licenseNum}
-                        onChange={(e) => setLicenseNum(e.target.value.toUpperCase())}
-                        className={`w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none transition-all input-glow ${
-                          shakeFields.licenseNum ? 'border-rose-500 animate-shake' : 'border-border-gray'
-                        }`}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">CDL Category</label>
-                      <select 
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                      >
-                        <option value="CDL-A">Class A CDL</option>
-                        <option value="CDL-B">Class B CDL</option>
-                      </select>
-                    </div>
+                    <Field 
+                      label="License Number" 
+                      placeholder="e.g. CDL-TX89012" 
+                      value={licenseNum}
+                      onChange={(val) => setLicenseNum(val.toUpperCase())}
+                      error={shakeFields.licenseNum ? (isLicenseUnique === false ? 'License Number already exists.' : 'License Number is required.') : undefined}
+                      right={
+                        isLicenseUnique === true ? (
+                          <span className="text-[10px] font-bold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-full border border-[#C7F0DC]">✓ Unique</span>
+                        ) : isLicenseUnique === false ? (
+                          <span className="text-[10px] font-bold text-[#DC2626] bg-[#FEF2F2] px-2 py-0.5 rounded-full border border-[#FBD5D5]">✗ Duplicate</span>
+                        ) : null
+                      }
+                      required
+                    />
+                    <SelectField 
+                      label="CDL Category"
+                      value={category}
+                      onChange={setCategory}
+                      options={[
+                        { value: 'CDL-A', label: 'Class A CDL' },
+                        { value: 'CDL-B', label: 'Class B CDL' }
+                      ]}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">License Issue Date</label>
-                      <input 
-                        type="date" 
-                        value={issueDate}
-                        onChange={(e) => setIssueDate(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">License Expiry Date</label>
-                      <input 
-                        type="date" 
-                        value={expiryDate}
-                        onChange={(e) => setExpiryDate(e.target.value)}
-                        className={`w-full bg-slate-50 border rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none cursor-pointer ${
-                          shakeFields.expiryDate ? 'border-rose-500 animate-shake' : 'border-border-gray'
-                        }`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Experience (Years)</label>
-                      <input 
-                        type="number" 
-                        value={experience}
-                        onChange={(e) => setExperience(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
+                    <Field 
+                      label="License Issue Date" 
+                      type="date" 
+                      value={issueDate}
+                      onChange={setIssueDate}
+                    />
+                    <Field 
+                      label="License Expiry Date" 
+                      type="date" 
+                      value={expiryDate}
+                      onChange={setExpiryDate}
+                      error={shakeFields.expiryDate ? 'License has expired.' : undefined}
+                    />
+                    <Field 
+                      label="Experience (Years)" 
+                      type="number" 
+                      value={experience}
+                      onChange={setExperience}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Issuing Authority</label>
-                      <input 
-                        type="text" 
-                        value={issuingAuthority}
-                        onChange={(e) => setIssuingAuthority(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">License Country</label>
-                      <input 
-                        type="text" 
-                        value={licenseCountry}
-                        onChange={(e) => setLicenseCountry(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">License State</label>
-                      <input 
-                        type="text" 
-                        value={licenseState}
-                        onChange={(e) => setLicenseState(e.target.value)}
-                        className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"
-                      />
-                    </div>
+                    <Field 
+                      label="Issuing Authority" 
+                      value={issuingAuthority}
+                      onChange={setIssuingAuthority}
+                    />
+                    <Field 
+                      label="License Country" 
+                      value={licenseCountry}
+                      onChange={setLicenseCountry}
+                    />
+                    <Field 
+                      label="License State" 
+                      value={licenseState}
+                      onChange={setLicenseState}
+                    />
                   </div>
 
                   {/* Licensing validation warning checkmarks */}
-                  <div className="pt-3 border-t border-slate-100">
+                  <div className="pt-3 border-t border-[#F3F4F6]">
                     {expiryInfo.status === 'expired' ? (
-                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start space-x-2 text-rose-600 animate-pulse">
-                        <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                      <div className="p-3 bg-[#FEF2F2] border border-[#FBD5D5] rounded-[12px] flex items-start space-x-2 text-[#DC2626] animate-pulse">
+                        <AlertTriangle className="w-4 h-4 text-[#DC2626] shrink-0 mt-0.5" />
                         <span className="text-[10.5px] font-semibold">
-                          Driver cannot be assigned until license is renewed. Current expiry states: {expiryInfo.label}.
+                          Driver cannot be assigned until license is renewed. Current expiry status: {expiryInfo.label}.
                         </span>
                       </div>
                     ) : expiryInfo.status === 'expiring_soon' ? (
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start space-x-2 text-amber-600">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div className="p-3 bg-[#FFFBEB] border border-[#FDE8C4] rounded-[12px] flex items-start space-x-2 text-[#D97706]">
+                        <AlertTriangle className="w-4 h-4 text-[#D97706] shrink-0 mt-0.5" />
                         <span className="text-[10.5px] font-semibold">
                           License expires soon: {expiryInfo.label}. Ensure renewal document uploads are queued.
                         </span>
                       </div>
                     ) : (
-                      <div className="p-3 bg-blue-50/50 border border-primary/20 rounded-xl flex items-start space-x-2 text-slate-600">
+                      <div className="p-3 bg-[#EFF4FF] border border-[#DBE6FF] rounded-[12px] flex items-start space-x-2 text-[#4B5563]">
                         <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                         <span className="text-[10.5px] font-semibold">
                           CDL Credential valid: {expiryInfo.label}.
@@ -678,7 +610,7 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               {/* STEP 3: COMPLIANCE DOCUMENTS */}
               {currentStep === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-text-dark border-b border-slate-100 pb-2 flex items-center">
+                  <h3 className="text-sm font-bold text-[#0A0A0A] border-b border-[#F3F4F6] pb-2 flex items-center">
                     <FileText className="w-4 h-4 text-primary mr-1.5" /> Step 3 — Compliance Dossier Checks
                   </h3>
 
@@ -695,21 +627,21 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                       const progress = file?.progress || 0;
 
                       return (
-                        <div key={doc.id} className="border border-border-gray hover:border-primary/45 p-4 rounded-xl text-center space-y-2.5 bg-slate-50/40 relative">
-                          <Upload className="w-5.5 h-5.5 text-slate-400 mx-auto" />
+                        <div key={doc.id} className="border border-[#E5E7EB] hover:border-primary/45 p-4 rounded-[12px] text-center space-y-2.5 bg-[#F9FAFB]/40 relative transition-all">
+                          <Upload className="w-5.5 h-5.5 text-[#9CA3AF] mx-auto" />
                           <div>
-                            <h4 className="text-[11px] font-bold text-slate-700 leading-tight">{doc.label}</h4>
+                            <h4 className="text-[11px] font-bold text-[#4B5563] leading-tight">{doc.label}</h4>
                             {isUploaded ? (
-                              <span className="text-[8.5px] font-black text-emerald-600 mt-1 block">Verified</span>
+                              <span className="text-[8.5px] font-black text-[#059669] mt-1 block">Verified</span>
                             ) : progress > 0 ? (
-                              <div className="w-full bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                              <div className="w-full bg-[#E5E7EB] h-1 rounded-full mt-2 overflow-hidden">
                                 <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
                               </div>
                             ) : (
                               <button 
                                 type="button"
                                 onClick={() => handleDocumentUpload(doc.id)}
-                                className="text-[9px] font-black text-primary hover:text-primary/80 mt-1 cursor-pointer block mx-auto focus:outline-none"
+                                className="text-[9px] font-black text-primary hover:text-[#1D4ED8] mt-1 cursor-pointer block mx-auto focus:outline-none"
                               >
                                 Upload File
                               </button>
@@ -718,7 +650,7 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                           {isUploaded && (
                             <button
                               onClick={() => handleRemoveDoc(doc.id)}
-                              className="absolute top-2 right-2 p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-slate-100 transition-all cursor-pointer"
+                              className="absolute top-2 right-2 p-1 text-[#9CA3AF] hover:text-[#DC2626] rounded hover:bg-[#F3F4F6] transition-all cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -733,14 +665,14 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               {/* STEP 4: AVAILABILITY & STATUS */}
               {currentStep === 4 && (
                 <motion.div key="step4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-text-dark border-b border-slate-100 pb-2 flex items-center">
+                  <h3 className="text-sm font-bold text-[#0A0A0A] border-b border-[#F3F4F6] pb-2 flex items-center">
                     <User className="w-4.5 h-4.5 text-primary mr-1.5" /> Step 4 — Safety Rating & Availability
                   </h3>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-600">
+                    <div className="flex justify-between text-xs font-bold text-[#4B5563]">
                       <span>Initial Safety Score Setting</span>
-                      <span className={safetyCategory.color}>{safetyScore}% ({safetyCategory.label})</span>
+                      <span className={`${safetyCategory.color} font-mono`}>{safetyScore}% ({safetyCategory.label})</span>
                     </div>
                     <input 
                       type="range" 
@@ -749,25 +681,25 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                       step="1"
                       value={safetyScore}
                       onChange={(e) => setSafetyScore(Number(e.target.value))}
-                      className="w-full accent-primary cursor-pointer h-1.5 rounded-lg bg-slate-100"
+                      className="w-full accent-primary cursor-pointer h-1.5 rounded-lg bg-[#E5E7EB]"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Corporate Hub Region</label>
-                    <select 
+                    <SelectField 
+                      label="Corporate Hub Region"
                       value={region}
-                      onChange={(e) => setRegion(e.target.value)}
-                      className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none cursor-pointer"
-                    >
-                      <option value="East Coast">East Coast</option>
-                      <option value="West Coast">West Coast</option>
-                      <option value="Midwest">Midwest</option>
-                      <option value="South">South</option>
-                    </select>
+                      onChange={setRegion}
+                      options={[
+                        { value: 'East Coast', label: 'East Coast' },
+                        { value: 'West Coast', label: 'West Coast' },
+                        { value: 'Midwest', label: 'Midwest' },
+                        { value: 'South', label: 'South' }
+                      ]}
+                    />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-4 border-t border-slate-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-4 border-t border-[#F3F4F6]">
                     {[
                       { id: 'Available', label: 'Available', desc: 'Driver is active and ready for route assignment.' },
                       { id: 'Off Duty', label: 'Off Duty', desc: 'Driver is off duty for rest periods.' },
@@ -776,12 +708,12 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                       <div
                         key={item.id}
                         onClick={() => setStatus(item.id as any)}
-                        className={`p-3 border rounded-xl cursor-pointer transition-all text-left ${
-                          status === item.id ? 'border-primary ring-2 ring-primary bg-blue-50/5' : 'border-border-gray hover:border-slate-350'
+                        className={`p-3 border rounded-[12px] cursor-pointer transition-all text-left ${
+                          status === item.id ? 'border-primary ring-2 ring-primary bg-blue-50/5' : 'border-[#E5E7EB] hover:border-[#9CA3AF]'
                         }`}
                       >
-                        <h4 className="font-bold text-xs">{item.label}</h4>
-                        <p className="text-[9.5px] text-slate-500 mt-1 leading-tight">{item.desc}</p>
+                        <h4 className="font-bold text-xs text-[#0A0A0A]">{item.label}</h4>
+                        <p className="text-[9.5px] text-[#6B7280] mt-1 leading-tight">{item.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -791,11 +723,11 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
             </AnimatePresence>
 
             {/* Stepper actions footer */}
-            <div className="flex justify-between pt-6 border-t border-slate-100 mt-6 select-none">
+            <div className="flex justify-between pt-6 border-t border-[#F3F4F6] mt-6 select-none">
               <button
                 onClick={handlePrevStep}
                 disabled={currentStep === 1}
-                className="px-3.5 py-2 border border-border-gray hover:bg-slate-50 disabled:opacity-40 text-slate-600 text-xs font-bold rounded-xl flex items-center space-x-1 transition-all cursor-pointer focus:outline-none"
+                className="px-3.5 py-2 border border-[#E5E7EB] hover:bg-[#F9FAFB] disabled:opacity-40 text-[#4B5563] text-xs font-bold rounded-[12px] flex items-center space-x-1 transition-all cursor-pointer focus:outline-none"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -804,7 +736,7 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               {currentStep < 4 ? (
                 <button
                   onClick={handleNextStep}
-                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl flex items-center space-x-1 transition-all cursor-pointer focus:outline-none shadow-sm"
+                  className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] flex items-center space-x-1 transition-all cursor-pointer focus:outline-none shadow-sm"
                 >
                   <span>Continue</span>
                   <ChevronRight className="w-4 h-4" />
@@ -812,7 +744,7 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               ) : (
                 <button
                   onClick={handleSubmitForm}
-                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all cursor-pointer focus:outline-none shadow-sm"
+                  className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] flex items-center space-x-1.5 transition-all cursor-pointer focus:outline-none shadow-sm"
                 >
                   <Check className="w-4.5 h-4.5" strokeWidth={3} />
                   <span>Register Driver</span>
@@ -823,23 +755,23 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
 
           {/* Right Live Preview Panel */}
           <div className="space-y-6">
-            <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-left space-y-4">
-              <h3 className="text-xs font-black text-slate-800 tracking-tight uppercase border-b border-slate-100 pb-2">Onboarding Live Preview</h3>
+            <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-left space-y-4">
+              <h3 className="text-xs font-black text-[#0A0A0A] tracking-tight uppercase border-b border-[#F3F4F6] pb-2">Onboarding Live Preview</h3>
               
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-full bg-blue-50 text-primary border border-primary/20 flex items-center justify-center shrink-0 shadow-inner">
+                <div className="w-14 h-14 rounded-full bg-[#EFF4FF] text-primary border border-[#DBE6FF] flex items-center justify-center shrink-0 shadow-inner">
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-text-dark text-xs">{name || '—'}</h4>
-                  <span className="text-[10px] font-bold font-mono text-slate-400 mt-1 block uppercase">{licenseNum || '—'} ({category})</span>
+                  <h4 className="font-bold text-[#0A0A0A] text-xs">{name || '—'}</h4>
+                  <span className="text-[10px] font-bold font-mono text-[#9CA3AF] mt-1 block uppercase">{licenseNum || '—'} ({category})</span>
                 </div>
               </div>
 
               {/* Document checklist status updates */}
-              <div className="pt-4 border-t border-slate-100 space-y-2">
-                <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Compliance Checklist</h4>
-                <div className="space-y-1.5 text-[10.5px] font-bold text-slate-600">
+              <div className="pt-4 border-t border-[#F3F4F6] space-y-2">
+                <h4 className="text-[10px] font-black uppercase text-[#9CA3AF] tracking-wider">Compliance Checklist</h4>
+                <div className="space-y-1.5 text-[10.5px] font-bold text-[#4B5563]">
                   {[
                     { id: 'License', name: 'CDL License Scan' },
                     { id: 'Medical', name: 'Medical Card' },
@@ -850,11 +782,11 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                     const active = !!documents[doc.id]?.completed;
                     return (
                       <div key={doc.id} className="flex justify-between items-center">
-                        <span className="flex items-center text-slate-500 font-semibold">{doc.name}</span>
+                        <span className="flex items-center text-[#6B7280] font-semibold">{doc.name}</span>
                         {active ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" />
                         ) : (
-                          <XCircle className="w-3.5 h-3.5 text-slate-300" />
+                          <XCircle className="w-3.5 h-3.5 text-[#D1D5DB]" />
                         )}
                       </div>
                     );
@@ -863,19 +795,19 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
               </div>
 
               {/* Dynamic Readiness score ring */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-4 border-t border-[#F3F4F6] flex items-center justify-between">
                 <div>
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider leading-none">Readiness score</h4>
-                  <span className="text-[10.5px] text-slate-500 font-bold block mt-1.5">
+                  <h4 className="text-[10px] font-black uppercase text-[#9CA3AF] tracking-wider leading-none">Readiness score</h4>
+                  <span className="text-[10.5px] text-[#6B7280] font-bold block mt-1.5">
                     {readinessScore >= 90 ? 'Ready for Assignment' : 'Requires Review'}
                   </span>
                 </div>
                 <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="32" cy="32" r={readinessRadius} className="stroke-slate-100" strokeWidth="4" fill="transparent" />
-                    <circle cx="32" cy="32" r={readinessRadius} className={readinessScore >= 90 ? 'stroke-primary' : 'stroke-amber-500'} strokeWidth="4" fill="transparent" strokeDasharray={readinessCircumference} strokeDashoffset={readinessOffset} strokeLinecap="round" />
+                    <circle cx="32" cy="32" r={readinessRadius} className="stroke-[#F3F4F6]" strokeWidth="4" fill="transparent" />
+                    <circle cx="32" cy="32" r={readinessRadius} className={readinessScore >= 90 ? 'stroke-primary' : 'stroke-[#D97706]'} strokeWidth="4" fill="transparent" strokeDasharray={readinessCircumference} strokeDashoffset={readinessOffset} strokeLinecap="round" />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-text-dark">
+                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#0A0A0A] font-mono tabular-nums">
                     {readinessScore}%
                   </div>
                 </div>
@@ -886,76 +818,67 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
         </div>
 
         {/* Outcome Success Dialog Modal */}
-        <AnimatePresence>
-          {showSuccessModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white border border-border-gray rounded-2xl shadow-2xl max-w-sm w-full mx-4 text-center p-8 z-10 space-y-4"
+        <ModalShell
+          isOpen={showSuccessModal}
+          onClose={onClose}
+          title="Driver Onboarded"
+          subtitle="Safety dossier initialized."
+          footer={
+            <div className="w-full flex flex-col space-y-2">
+              <button
+                onClick={onClose}
+                className="w-full py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] transition-colors cursor-pointer cc-shadow-sm"
               >
-                <div className="w-16 h-16 bg-emerald-50 text-success-green border border-emerald-100 rounded-full flex items-center justify-center mx-auto">
-                  <Check className="w-8 h-8" strokeWidth={3} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-text-dark">Driver Onboarded</h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                    Safety dossier initialized. Driver record has been updated and released to dispatch registry pool.
-                  </p>
-                </div>
-                <div className="pt-4 flex flex-col space-y-2">
-                  <button
-                    onClick={onClose}
-                    className="w-full py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                  >
-                    Go to Registry
-                  </button>
-                  <button
-                    onClick={() => {
-                      setName('');
-                      setLicenseNum('');
-                      setPhone('');
-                      setCurrentStep(1);
-                      setDocuments({});
-                      setShowSuccessModal(false);
-                    }}
-                    className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                  >
-                    Enroll Another Operator
-                  </button>
-                </div>
-              </motion.div>
+                Go to Registry
+              </button>
+              <button
+                onClick={() => {
+                  setName('');
+                  setLicenseNum('');
+                  setPhone('');
+                  setCurrentStep(1);
+                  setDocuments({});
+                  setShowSuccessModal(false);
+                }}
+                className="w-full py-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#4B5563] text-xs font-bold rounded-[12px] transition-colors cursor-pointer"
+              >
+                Enroll Another Operator
+              </button>
             </div>
-          )}
-        </AnimatePresence>
+          }
+        >
+          <div className="text-center py-4 space-y-4">
+            <div className="w-16 h-16 bg-[#ECFDF5] text-[#059669] border border-[#C7F0DC] rounded-full flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8" strokeWidth={3} />
+            </div>
+            <p className="text-xs text-[#6B7280] leading-relaxed">
+              Safety dossier initialized. Driver record has been updated and released to dispatch registry pool.
+            </p>
+          </div>
+        </ModalShell>
 
         {/* Outcome Error Modal */}
-        <AnimatePresence>
-          {showErrorModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowErrorModal(false)} className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white border border-border-gray rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 z-10 text-left space-y-4"
-              >
-                <div className="flex items-center space-x-2 pb-2 border-b border-slate-100">
-                  <XCircle className="w-5 h-5 text-rose-500" />
-                  <h3 className="text-sm font-black text-text-dark uppercase">Registry Validation Failed</h3>
-                </div>
-                <ul className="list-disc pl-5 text-[11px] font-bold text-rose-500 space-y-1">
-                  {validationErrors.map((err, idx) => <li key={idx}>{err}</li>)}
-                </ul>
-                <button onClick={() => setShowErrorModal(false)} className="w-full mt-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl cursor-pointer">
-                  Go Back and Fix
-                </button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
+        <ModalShell
+          isOpen={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          title="Registry Validation Failed"
+          subtitle="Please correct the following errors:"
+          footer={
+            <button 
+              onClick={() => setShowErrorModal(false)} 
+              className="w-full py-2 bg-[#0A0A0A] hover:bg-[#262626] text-white text-xs font-bold rounded-[12px] cursor-pointer border border-slate-950 cc-shadow-sm"
+            >
+              Go Back and Fix
+            </button>
+          }
+        >
+          <div className="py-2 space-y-3">
+            <ul className="list-disc pl-5 text-[11px] font-bold text-[#DC2626] space-y-1">
+              {validationErrors.map((err, idx) => <li key={idx}>{err}</li>)}
+            </ul>
+          </div>
+        </ModalShell>
       </div>
-    </div>
+    </Reveal>
   );
 };

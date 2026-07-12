@@ -106,7 +106,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 select-none mt-6">
       {/* 2-Column Area Chart */}
-      <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm lg:col-span-2 flex flex-col justify-between">
+      <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm lg:col-span-2 flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center space-x-2">
@@ -114,7 +114,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
                 <BarChart className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-text-dark">Fleet Utilization Trend</h3>
+                <h3 className="text-sm cc-display font-semibold text-[#0A0A0A]">Fleet Utilization Trend</h3>
                 <p className="text-[10px] text-slate-500 font-medium">Real-time daily resource activity</p>
               </div>
             </div>
@@ -122,7 +122,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
             {/* Controls */}
             <div className="flex items-center space-x-3">
               {/* Zoom Buttons */}
-              <div className="flex bg-slate-50 p-1 border border-border-gray rounded-xl">
+              <div className="flex bg-slate-50 p-1 border border-[#E5E7EB] rounded-xl">
                 {(['7D', '30D', '3M'] as DatasetKey[]).map((range) => (
                   <button
                     key={range}
@@ -131,7 +131,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
                       setHoveredIndex(null);
                     }}
                     className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-colors cursor-pointer ${
-                      zoomRange === range ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                      zoomRange === range ? 'bg-white text-primary cc-shadow-sm' : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
                     {range}
@@ -143,14 +143,14 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
               <div className="flex space-x-1.5">
                 <button
                   onClick={() => handleExport('CSV')}
-                  className="p-1.5 border border-border-gray hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 border border-[#E5E7EB] hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                   title="Export CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => onShowToast('Visual scale expanded to fullscreen')}
-                  className="p-1.5 border border-border-gray hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 border border-[#E5E7EB] hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                   title="Expand Visual View"
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
@@ -308,14 +308,14 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
       </div>
 
       {/* 1-Column Donut Chart */}
-      <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+      <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center space-x-2 mb-3">
             <div className="p-1.5 rounded-lg bg-blue-50 text-primary">
               <PieChart className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-text-dark">Vehicle Status</h3>
+              <h3 className="text-sm cc-display font-semibold text-[#0A0A0A]">Vehicle Status</h3>
               <p className="text-[10px] text-slate-500 font-medium">Distribution of fleet assets</p>
             </div>
           </div>
@@ -366,7 +366,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   {donutSegments[hoveredDonutIdx].label}
                 </span>
-                <span className="text-lg font-black text-text-dark">
+                <span className="text-lg cc-display font-bold text-[#0A0A0A]">
                   {donutSegments[hoveredDonutIdx].percentage}%
                 </span>
                 <span className="text-[9px] font-semibold text-slate-500">
@@ -378,7 +378,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Total Fleet
                 </span>
-                <span className="text-xl font-black text-text-dark">
+                <span className="text-xl cc-display font-bold text-[#0A0A0A]">
                   162
                 </span>
                 <span className="text-[9px] font-semibold text-primary">
@@ -390,7 +390,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ onShowToast 
         </div>
 
         {/* Legend */}
-        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-border-gray/50">
+        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#E5E7EB]/50">
           {donutSegments.map((seg, idx) => (
             <div 
               key={idx} 

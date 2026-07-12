@@ -14,7 +14,6 @@ import {
   Fuel,
   User,
   TrendingUp,
-  TrendingDown,
   BarChart2,
   FileText,
   Share2,
@@ -22,6 +21,12 @@ import {
   Activity,
   MapPin
 } from 'lucide-react';
+import { SectionHeader } from '../ui/SectionHeader';
+import { StatusPill } from '../ui/StatusPill';
+import { KpiTile } from '../ui/KpiTile';
+import { Reveal } from '../ui/Reveal';
+import { Segmented } from '../ui/Segmented';
+import { Ring } from '../ui/Ring';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +38,7 @@ interface KpiData {
   up: boolean;
   spark: number[];
   color: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
 }
 
 interface ReportsAnalyticsProps {
@@ -41,17 +46,6 @@ interface ReportsAnalyticsProps {
 }
 
 // ─── Pure SVG Chart Components ────────────────────────────────────────────────
-
-const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
-  const w = 72; const h = 22;
-  const max = Math.max(...data); const min = Math.min(...data); const range = max - min || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - 2 - ((v - min) / range) * (h - 6)}`).join(' ');
-  return (
-    <svg width={w} height={h} className="overflow-visible select-none">
-      <path d={`M ${pts}`} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
 
 const AreaChart: React.FC<{ data: number[]; labels: string[]; color: string; height?: number }> = ({ data, labels, color, height = 110 }) => {
   const w = 340; const h = height;
@@ -272,144 +266,142 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
   }
 
   return (
-    <div className="space-y-6 select-none relative pb-16 text-left">
+    <Reveal className="space-y-6 select-none relative pb-16 text-left">
 
       {/* ── Sticky Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-gray/50 bg-white/80 backdrop-blur sticky top-16 z-20">
-        <div>
-          <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">Reports & Analytics</h1>
-          <p className="text-xs text-slate-500 font-medium mt-1.5 leading-none">
-            Monitor operational performance, fleet utilization, fuel efficiency, costs, and profitability with real-time analytics.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto relative">
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(p => !p)}
-              className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1.5"
+      <SectionHeader
+        title="Reports & Analytics"
+        subtitle="Monitor operational performance, fleet utilization, fuel efficiency, costs, and profitability with real-time analytics."
+        actions={
+          <>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(p => !p)}
+                className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] shadow-sm transition-all cursor-pointer flex items-center space-x-1.5"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Report</span>
+              </button>
+              <AnimatePresence>
+                {showExportMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="absolute top-full right-0 mt-2 bg-white border border-[#E5E7EB] rounded-[16px] shadow-xl z-30 w-48 py-2 overflow-hidden"
+                  >
+                    {['Export CSV', 'Export PDF', 'Export Excel', 'Email Report'].map(opt => (
+                      <button 
+                        key={opt} 
+                        onClick={() => handleExport(opt)} 
+                        className="w-full px-4 py-2.5 text-xs font-semibold text-[#4B5563] hover:text-[#0A0A0A] hover:bg-[#F9FAFB] text-left cursor-pointer transition-colors"
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <button 
+              onClick={() => onShowToast('Dashboard link copied to clipboard.')} 
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm flex items-center space-x-1.5"
             >
-              <Download className="w-4 h-4" /><span>Export Report</span>
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share</span>
             </button>
-            <AnimatePresence>
-              {showExportMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="absolute top-full right-0 mt-2 bg-white border border-border-gray rounded-2xl shadow-xl z-30 w-48 py-2 overflow-hidden"
-                >
-                  {['Export CSV', 'Export PDF', 'Export Excel', 'Email Report'].map(opt => (
-                    <button key={opt} onClick={() => handleExport(opt)} className="w-full px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 text-left cursor-pointer transition-colors">
-                      {opt}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <button onClick={() => onShowToast('Dashboard link copied to clipboard.')} className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5">
-            <Share2 className="w-3.5 h-3.5" /><span>Share</span>
-          </button>
-          <button onClick={() => onShowToast('Refreshing analytics data...')} className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 rounded-xl transition-all cursor-pointer">
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+            <button 
+              onClick={() => onShowToast('Refreshing analytics data...')} 
+              className="p-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] rounded-[12px] transition-all cursor-pointer cc-shadow-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </>
+        }
+      />
 
       {/* ── Global Filters ── */}
-      <div className="sticky top-[80px] z-10 bg-white border border-border-gray p-4 rounded-2xl flex flex-wrap items-center gap-3.5 shadow-sm">
-        <div className="flex items-center space-x-2 border-r border-border-gray pr-3.5 shrink-0">
+      <div className="sticky top-0 z-20 bg-white border border-[#E5E7EB] p-4 rounded-[16px] flex flex-wrap items-center gap-3.5 cc-shadow-sm">
+        <div className="flex items-center space-x-2 border-r border-[#E5E7EB] pr-3.5 shrink-0 text-[#0A0A0A]">
           <Filter className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-slate-800">Filters</span>
+          <span className="text-xs font-black uppercase tracking-wider">Filters</span>
         </div>
-        <select value={dateRange} onChange={e => setDateRange(e.target.value)} className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
+        <select 
+          value={dateRange} 
+          onChange={e => setDateRange(e.target.value)} 
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3.5 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer focus:bg-white"
+        >
           {['This Week', 'This Month', 'This Quarter', 'This Year', 'Custom Range'].map(o => <option key={o}>{o}</option>)}
         </select>
         {['All Vehicles', 'All Drivers', 'All Regions', 'All Types'].map(ph => (
           <div key={ph} className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input type="text" placeholder={ph} className="pl-8 pr-3 py-2 bg-slate-50 border border-border-gray rounded-xl text-xs focus:bg-white focus:outline-none w-28 transition-all" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+            <input 
+              type="text" 
+              placeholder={ph} 
+              className="pl-9 pr-4 py-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-xs focus:bg-white focus:outline-none w-28 transition-all font-semibold text-[#4B5563]" 
+            />
           </div>
         ))}
-        <button onClick={() => onShowToast('Analytics filters applied.')} className="px-3 py-2 bg-primary text-white text-xs font-bold rounded-xl cursor-pointer">Apply</button>
-        <button onClick={() => onShowToast('Filters reset.')} className="px-2 py-1 text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Reset</button>
+        <button 
+          onClick={() => onShowToast('Analytics filters applied.')} 
+          className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] cursor-pointer shadow-sm transition-all"
+        >
+          Apply
+        </button>
+        <button 
+          onClick={() => onShowToast('Filters reset.')} 
+          className="px-2 py-1 text-xs font-bold text-[#9CA3AF] hover:text-[#4B5563] cursor-pointer"
+        >
+          Reset
+        </button>
       </div>
 
       {/* ── KPI Ribbon ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4">
-        {kpis.map((k, idx) => {
-          const Icon = k.icon;
-          return (
-            <motion.div
-              key={k.id}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.055 }}
-              className="p-4 bg-white border border-border-gray rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Icon className="w-3.5 h-3.5 text-primary" />
-                </div>
-                {k.up
-                  ? <TrendingUp className="w-3 h-3 text-emerald-500" />
-                  : <TrendingDown className="w-3 h-3 text-rose-400" />
-                }
-              </div>
-              <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider block leading-none">{k.label}</span>
-              <h3 className="text-base font-black text-text-dark tracking-tight leading-tight mt-1.5">{k.value}</h3>
-              <div className="mt-2 flex justify-between items-end">
-                <span className="text-[8.5px] font-bold text-slate-400 leading-none pr-1">{k.change}</span>
-                <div className="w-10 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                  <Sparkline data={k.spark} color={k.color} />
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+        {kpis.map((k) => (
+          <KpiTile
+            key={k.id}
+            icon={k.icon}
+            label={k.label}
+            value={k.value}
+            sublabel={k.change}
+            spark={k.spark}
+            color={k.color}
+            tint={k.color === '#2563EB' ? '#EFF4FF' : k.color === '#22C55E' ? '#ECFDF5' : k.color === '#EF4444' ? '#FEF2F2' : '#FFFBEB'}
+          />
+        ))}
       </div>
 
       {/* ── Executive Summary Hero Card ── */}
-      <div className="bg-white border border-border-gray rounded-2xl shadow-sm p-6 grid grid-cols-2 md:grid-cols-5 gap-6">
-        <div className="md:col-span-1 flex flex-col items-center justify-center border-r border-slate-100 pr-6 text-center">
-          <div className="relative w-28 h-28 mb-2">
-            <svg className="w-full h-full -rotate-90">
-              <circle cx="56" cy="56" r="48" className="stroke-slate-100" strokeWidth="7" fill="transparent" />
-              <motion.circle
-                cx="56" cy="56" r="48"
-                className="stroke-primary"
-                strokeWidth="7" fill="transparent"
-                strokeLinecap="round"
-                strokeDasharray={2 * Math.PI * 48}
-                initial={{ strokeDashoffset: 2 * Math.PI * 48 }}
-                animate={{ strokeDashoffset: 2 * Math.PI * 48 - (0.742 * 2 * Math.PI * 48) }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
-              />
-            </svg>
+      <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm p-6 grid grid-cols-2 md:grid-cols-5 gap-6">
+        <div className="md:col-span-1 flex flex-col items-center justify-center border-r border-[#F3F4F6] pr-6 text-center">
+          <div className="relative w-28 h-28 mb-2 flex items-center justify-center">
+            <Ring value={74} size={96} stroke={6} color="#2563EB" />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-black text-text-dark leading-none">74</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Score</span>
+              <span className="text-2xl font-black text-[#0A0A0A] leading-none">74</span>
+              <span className="text-[9px] font-bold text-[#9CA3AF] uppercase mt-1">Score</span>
             </div>
           </div>
-          <span className="text-[10px] font-black text-slate-600 uppercase tracking-wide">Fleet Performance</span>
+          <span className="text-[10px] font-black text-[#4B5563] uppercase tracking-wide">Fleet Performance</span>
         </div>
 
         <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-5">
           {[
-            { label: 'Fleet Health', value: '92%', sub: 'Excellent condition', color: '#22C55E' },
+            { label: 'Fleet Health', value: '92%', sub: 'Excellent condition', color: '#059669' },
             { label: 'Profit Margin', value: '28.4%', sub: '+3.2% vs last qtr', color: '#2563EB' },
-            { label: 'Active Fleet', value: '9 / 12', sub: '3 in maintenance', color: '#F59E0B' },
+            { label: 'Active Fleet', value: '9 / 12', sub: '3 in maintenance', color: '#D97706' },
             { label: 'Vehicle Availability', value: '75%', sub: 'Ready for dispatch', color: '#2563EB' },
           ].map(stat => (
-            <div key={stat.label} className="border border-border-gray/60 p-4 rounded-xl space-y-1">
-              <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider block">{stat.label}</span>
+            <div key={stat.label} className="bg-[#F9FAFB] border border-[#E5E7EB] p-4 rounded-[12px] space-y-1 cc-shadow-sm">
+              <span className="text-[9px] uppercase font-black text-[#9CA3AF] tracking-wider block">{stat.label}</span>
               <h4 className="text-xl font-black tracking-tight" style={{ color: stat.color }}>{stat.value}</h4>
-              <p className="text-[10px] font-semibold text-slate-400 leading-snug">{stat.sub}</p>
+              <p className="text-[10px] font-semibold text-[#6B7280] leading-snug">{stat.sub}</p>
             </div>
           ))}
-          <div className="md:col-span-4 pt-3 border-t border-slate-100">
-            <p className="text-xs font-semibold text-slate-500 leading-relaxed">
-              <span className="font-black text-text-dark">Executive Summary:</span> Fleet operations this month show strong performance with a 74/100 fleet score. Utilization improved 11%, fuel efficiency reached 7.2 mpg — above the 6.8 mpg fleet benchmark. Operational costs decreased 3.1% following preventive maintenance optimisations. Three vehicles are currently in servicing with an estimated return within 48 hours. Revenue is tracking at $128,400, yielding a 28.4% profit margin.
+          <div className="md:col-span-4 pt-3 border-t border-[#F3F4F6]">
+            <p className="text-xs font-semibold text-[#4B5563] leading-relaxed">
+              <span className="font-black text-[#0A0A0A]">Executive Summary:</span> Fleet operations this month show strong performance with a 74/100 fleet score. Utilization improved 11%, fuel efficiency reached 7.2 mpg — above the 6.8 mpg fleet benchmark. Operational costs decreased 3.1% following preventive maintenance optimisations. Three vehicles are currently in servicing with an estimated return within 48 hours. Revenue is tracking at $128,400, yielding a 28.4% profit margin.
             </p>
           </div>
         </div>
@@ -419,11 +411,11 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
         {/* Fleet Utilization Area Chart */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Fleet Utilization Trend</h3>
-              <p className="text-[9.5px] text-slate-400 font-medium mt-0.5">Weekly vehicle deployment rate</p>
+              <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Fleet Utilization Trend</h3>
+              <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Weekly vehicle deployment rate</p>
             </div>
             <span className="text-xs font-black text-primary">74%</span>
           </div>
@@ -431,33 +423,33 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         </div>
 
         {/* Fuel Efficiency Line */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Fuel Efficiency (mpg)</h3>
-              <p className="text-[9.5px] text-slate-400 font-medium mt-0.5">Daily average across fleet</p>
+              <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Fuel Efficiency (mpg)</h3>
+              <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Daily average across fleet</p>
             </div>
-            <span className="text-xs font-black text-emerald-600">7.2 mpg</span>
+            <span className="text-xs font-black text-[#059669]">7.2 mpg</span>
           </div>
-          <AreaChart data={fuelTrendData} labels={utilizationLabels} color="#22C55E" />
+          <AreaChart data={fuelTrendData} labels={utilizationLabels} color="#059669" />
         </div>
 
         {/* Expense Donut */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
           <div>
-            <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Expense Distribution</h3>
-            <p className="text-[9.5px] text-slate-400 font-medium mt-0.5">Breakdown by expense category</p>
+            <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Expense Distribution</h3>
+            <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Breakdown by expense category</p>
           </div>
           <div className="flex items-center space-x-5 pt-1">
             <DonutChart segments={donutSegments} />
             <div className="space-y-2 flex-1">
               {donutSegments.map(s => (
-                <div key={s.label} className="flex items-center justify-between text-[10.5px] font-semibold text-slate-600">
+                <div key={s.label} className="flex items-center justify-between text-[10.5px] font-semibold text-[#4B5563]">
                   <div className="flex items-center space-x-1.5">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.color }} />
-                    <span className="text-slate-400">{s.label}</span>
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
+                    <span className="text-[#9CA3AF]">{s.label}</span>
                   </div>
-                  <span className="font-mono font-bold">${(s.value / 1000).toFixed(1)}k</span>
+                  <span className="font-mono font-bold text-[#0A0A0A]">${(s.value / 1000).toFixed(1)}k</span>
                 </div>
               ))}
             </div>
@@ -465,10 +457,10 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         </div>
 
         {/* Operational Cost Breakdown Bar */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
           <div>
-            <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Operational Cost Breakdown</h3>
-            <p className="text-[9.5px] text-slate-400 font-medium mt-0.5">By expense category this month</p>
+            <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Operational Cost Breakdown</h3>
+            <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">By expense category this month</p>
           </div>
           <div className="pt-2">
             <BarChart data={costBreakdownData} labels={costBreakdownLabels} colors={costBreakdownColors} />
@@ -476,10 +468,10 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         </div>
 
         {/* Trip Status Bar */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
           <div>
-            <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Trip Completion Analysis</h3>
-            <p className="text-[9.5px] text-slate-400 font-medium mt-0.5">Status distribution this period</p>
+            <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Trip Completion Analysis</h3>
+            <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Status distribution this period</p>
           </div>
           <div className="pt-2">
             <BarChart data={tripStatusData} labels={tripStatusLabels} colors={tripStatusColors} />
@@ -487,15 +479,15 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         </div>
 
         {/* AI Insights */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2 flex items-center">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+          <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2 flex items-center">
             <Sparkles className="w-4 h-4 text-primary mr-1.5" /> AI Business Intelligence
           </h3>
           <div className="space-y-2.5 overflow-y-auto max-h-52">
             {insights.map((ins, i) => (
-              <div key={i} className={`p-3 border rounded-xl flex items-start space-x-2 text-[10.5px] font-semibold leading-relaxed ${ins.type === 'warn' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-blue-50/50 border-primary/20 text-slate-600'}`}>
+              <div key={i} className={`p-3 border rounded-[12px] flex items-start space-x-2 text-[10.5px] font-semibold leading-relaxed ${ins.type === 'warn' ? 'bg-[#FFFBEB] border-[#FDE8B0] text-[#D97706]' : 'bg-[#EFF4FF] border-[#DBE6FF] text-[#4B5563]'}`}>
                 {ins.type === 'warn'
-                  ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  ? <AlertTriangle className="w-3.5 h-3.5 text-[#D97706] shrink-0 mt-0.5" />
                   : <Info className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                 }
                 <span>{ins.text}</span>
@@ -510,8 +502,8 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Best Performing Vehicles */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+          <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2">
             Top Performing Vehicles
           </h3>
           <div className="space-y-4">
@@ -519,13 +511,13 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
               <div key={v.reg} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2.5">
-                    <span className="text-sm font-black text-slate-200 w-5">#{idx + 1}</span>
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-black text-[#9CA3AF] w-5">#{idx + 1}</span>
+                    <div className="w-7 h-7 rounded-[8px] bg-[#EFF4FF] flex items-center justify-center shrink-0 border border-[#DBE6FF]">
                       <Truck className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div>
-                      <span className="font-bold text-[11px] text-slate-700 block leading-none">{v.name}</span>
-                      <span className="font-mono text-[9px] text-slate-400">{v.reg}</span>
+                      <span className="font-bold text-[11px] text-[#4B5563] block leading-none">{v.name}</span>
+                      <span className="font-mono text-[9px] text-[#9CA3AF]">{v.reg}</span>
                     </div>
                   </div>
                   <span className="text-xs font-black text-primary">{v.roi}% ROI</span>
@@ -537,8 +529,8 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         </div>
 
         {/* Best Drivers */}
-        <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2">
+        <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+          <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2">
             Top Performing Drivers
           </h3>
           <div className="space-y-4">
@@ -546,18 +538,18 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
               <div key={d.name} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2.5">
-                    <span className="text-sm font-black text-slate-200 w-5">#{idx + 1}</span>
-                    <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-black text-[#9CA3AF] w-5">#{idx + 1}</span>
+                    <div className="w-7 h-7 rounded-full bg-[#EFF4FF] flex items-center justify-center shrink-0 border border-[#DBE6FF]">
                       <User className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div>
-                      <span className="font-bold text-[11px] text-slate-700 block leading-none">{d.name}</span>
-                      <span className="text-[9px] text-slate-400">{d.trips} trips · {d.onTime}% on-time</span>
+                      <span className="font-bold text-[11px] text-[#4B5563] block leading-none">{d.name}</span>
+                      <span className="text-[9px] text-[#9CA3AF]">{d.trips} trips · {d.onTime}% on-time</span>
                     </div>
                   </div>
-                  <span className="text-xs font-black text-emerald-600">{d.safety}%</span>
+                  <span className="text-xs font-black text-[#059669]">{d.safety}%</span>
                 </div>
-                <HorizontalBar label="Safety Score" value={d.safety} max={100} color="#22C55E" suffix="%" />
+                <HorizontalBar label="Safety Score" value={d.safety} max={100} color="#059669" suffix="%" />
               </div>
             ))}
           </div>
@@ -565,25 +557,17 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
       </div>
 
       {/* ── Tab Navigation ── */}
-      <div className="flex space-x-1 border-b border-border-gray/50 pb-px">
-        {([
-          { id: 'overview', label: 'Overview', icon: BarChart2 },
-          { id: 'vehicles', label: 'Vehicle Matrix', icon: Truck },
-          { id: 'drivers', label: 'Driver Matrix', icon: User },
-          { id: 'costs', label: 'Cost Analytics', icon: DollarSign },
-        ] as const).map(tab => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 border-b-2 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer focus:outline-none ${active ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-            >
-              <Icon className="w-4 h-4" /><span>{tab.label}</span>
-            </button>
-          );
-        })}
+      <div className="flex justify-start">
+        <Segmented
+          value={activeTab}
+          onChange={(v) => setActiveTab(v as any)}
+          options={[
+            { id: 'overview', label: <span className="flex items-center gap-1.5"><BarChart2 className="w-4 h-4" /> Overview</span> },
+            { id: 'vehicles', label: <span className="flex items-center gap-1.5"><Truck className="w-4 h-4" /> Vehicle Matrix</span> },
+            { id: 'drivers', label: <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> Driver Matrix</span> },
+            { id: 'costs', label: <span className="flex items-center gap-1.5"><DollarSign className="w-4 h-4" /> Cost Analytics</span> }
+          ]}
+        />
       </div>
 
       {/* ── Tab Content ── */}
@@ -592,10 +576,10 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <motion.div key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-            {/* Monthly Expense Timeline */}
-            <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2">Monthly Performance Timeline</h3>
-              <div className="relative pl-5 space-y-5 border-l-2 border-primary/10 max-w-2xl">
+            {/* Monthly Performance Timeline */}
+            <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+              <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2">Monthly Performance Timeline</h3>
+              <div className="relative pl-5 space-y-5 border-l-2 border-primary/10 max-w-2xl text-left">
                 {[
                   { month: 'February 2026', fleet: 8, revenue: '$98,400', fuel: '$14,200', note: 'Vehicle TRK-302 acquired.' },
                   { month: 'March 2026', fleet: 9, revenue: '$104,800', fuel: '$15,100', note: 'Maintenance spike — brake inspections fleet-wide.' },
@@ -605,15 +589,15 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
                   { month: 'July 2026', fleet: 12, revenue: '$128,400', fuel: '$13,700', note: 'Current period — strong performance trending.' },
                 ].map((item, i) => (
                   <div key={i} className="relative">
-                    <div className="absolute -left-[25px] top-1.5 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full" />
+                    <div className="absolute -left-[26px] top-1.5 w-3 h-3 bg-primary border-2 border-white rounded-full shadow-sm" />
                     <div className="flex flex-wrap gap-4 items-start">
                       <div>
-                        <span className="text-[11px] font-black text-slate-700 block">{item.month}</span>
-                        <p className="text-[10px] font-medium text-slate-400 mt-0.5 leading-relaxed">{item.note}</p>
+                        <span className="text-[11px] font-black text-[#0A0A0A] block">{item.month}</span>
+                        <p className="text-[10px] font-semibold text-[#6B7280] mt-1 leading-relaxed">{item.note}</p>
                       </div>
-                      <div className="flex space-x-4 text-[10px] font-semibold text-slate-600 ml-auto">
-                        <span className="text-slate-400">Revenue: <span className="text-emerald-600 font-bold">{item.revenue}</span></span>
-                        <span className="text-slate-400">Fuel: <span className="font-bold">{item.fuel}</span></span>
+                      <div className="flex space-x-4 text-[10px] font-bold text-[#6B7280] ml-auto">
+                        <span>Revenue: <span className="text-[#059669] font-black">{item.revenue}</span></span>
+                        <span>Fuel: <span className="font-black text-[#0A0A0A]">{item.fuel}</span></span>
                       </div>
                     </div>
                   </div>
@@ -622,8 +606,8 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
             </div>
 
             {/* Export Center */}
-            <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2 flex items-center">
+            <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+              <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2 flex items-center">
                 <FileText className="w-4 h-4 text-primary mr-1.5" /> Export & Distribution Center
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -638,10 +622,10 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
                   <button
                     key={card.label}
                     onClick={() => handleExport(card.action)}
-                    className="p-4 border border-border-gray hover:border-primary/40 rounded-xl text-left space-y-1 transition-all hover:shadow-sm cursor-pointer group"
+                    className="p-4 border border-[#E5E7EB] hover:border-primary/40 rounded-[12px] text-left space-y-1 transition-all hover:shadow-sm cursor-pointer group bg-white"
                   >
-                    <span className="text-[11px] font-black text-slate-700 group-hover:text-primary transition-colors block">{card.label}</span>
-                    <p className="text-[9.5px] text-slate-400 font-medium leading-relaxed">{card.sub}</p>
+                    <span className="text-[11px] font-black text-[#4B5563] group-hover:text-primary transition-colors block">{card.label}</span>
+                    <p className="text-[9.5px] text-[#9CA3AF] font-semibold leading-relaxed">{card.sub}</p>
                   </button>
                 ))}
               </div>
@@ -652,47 +636,45 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         {/* VEHICLE MATRIX */}
         {activeTab === 'vehicles' && (
           <motion.div key="vehicles" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <div className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-border-gray/50">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Vehicle Performance Matrix</h3>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5">ROI, fuel efficiency, and operational cost per vehicle</p>
+            <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden text-left">
+              <div className="p-4.5 border-b border-[#E5E7EB]">
+                <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Vehicle Performance Matrix</h3>
+                <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">ROI, fuel efficiency, and operational cost per vehicle</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-border-gray/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">
                       {['Vehicle', 'Distance (mi)', 'Fuel Used (L)', 'Efficiency', 'Maint. Cost', 'Ops Cost', 'Revenue', 'ROI', 'Status'].map(h => (
                         <th key={h} className="p-3.5 first:pl-5 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-gray/50 text-[11px] font-semibold text-slate-700">
+                  <tbody className="divide-y divide-[#E5E7EB] text-[11px] font-semibold text-[#4B5563]">
                     {vehicleMatrix.map(v => (
-                      <tr key={v.reg} className="hover:bg-slate-50/50 transition-colors cursor-pointer">
+                      <tr key={v.reg} className="hover:bg-[#F9FAFB]/50 transition-colors cursor-pointer">
                         <td className="p-3.5 pl-5">
                           <div className="flex items-center space-x-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                            <div className="w-7 h-7 rounded-[8px] bg-[#EFF4FF] flex items-center justify-center shrink-0 border border-[#DBE6FF]">
                               <Truck className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <span className="font-bold text-slate-700 block leading-none">{v.name}</span>
-                              <span className="font-mono text-[9px] text-slate-400">{v.reg}</span>
+                              <span className="font-bold text-[#0A0A0A] block leading-none">{v.name}</span>
+                              <span className="font-mono text-[9px] text-[#9CA3AF]">{v.reg}</span>
                             </div>
                           </div>
                         </td>
                         <td className="p-3.5 font-mono">{v.distance.toLocaleString()}</td>
                         <td className="p-3.5 font-mono">{v.fuel.toLocaleString()}</td>
-                        <td className="p-3.5 font-mono font-bold text-emerald-600">{v.efficiency} mpg</td>
+                        <td className="p-3.5 font-mono font-bold text-[#059669]">{v.efficiency} mpg</td>
                         <td className="p-3.5 font-mono">${v.maintCost.toLocaleString()}</td>
                         <td className="p-3.5 font-mono">${v.opsCost.toLocaleString()}</td>
-                        <td className="p-3.5 font-mono font-bold text-slate-900">${v.revenue.toLocaleString()}</td>
+                        <td className="p-3.5 font-mono font-bold text-[#0A0A0A]">${v.revenue.toLocaleString()}</td>
                         <td className="p-3.5">
-                          <span className={`font-black ${v.roi >= 58 ? 'text-emerald-600' : v.roi >= 50 ? 'text-primary' : 'text-amber-600'}`}>{v.roi}%</span>
+                          <span className={`font-black ${v.roi >= 58 ? 'text-[#059669]' : v.roi >= 50 ? 'text-primary' : 'text-[#D97706]'}`}>{v.roi}%</span>
                         </td>
                         <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${v.status === 'Active' ? 'bg-blue-50 text-blue-600 border-blue-100 animate-pulse' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
-                            {v.status}
-                          </span>
+                          <StatusPill status={v.status} />
                         </td>
                       </tr>
                     ))}
@@ -706,43 +688,43 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         {/* DRIVER MATRIX */}
         {activeTab === 'drivers' && (
           <motion.div key="drivers" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <div className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-border-gray/50">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Driver Performance Matrix</h3>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5">Safety, efficiency, and operational metrics per driver</p>
+            <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden text-left">
+              <div className="p-4.5 border-b border-[#E5E7EB]">
+                <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Driver Performance Matrix</h3>
+                <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Safety, efficiency, and operational metrics per driver</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-border-gray/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">
                       {['Driver', 'Trips', 'Distance (mi)', 'Safety Score', 'Efficiency', 'Incidents', 'On-Time %', 'Performance'].map(h => (
                         <th key={h} className="p-3.5 first:pl-5 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-gray/50 text-[11px] font-semibold text-slate-700">
+                  <tbody className="divide-y divide-[#E5E7EB] text-[11px] font-semibold text-[#4B5563]">
                     {driverMatrix.map(d => (
-                      <tr key={d.name} className="hover:bg-slate-50/50 transition-colors cursor-pointer">
+                      <tr key={d.name} className="hover:bg-[#F9FAFB]/50 transition-colors cursor-pointer">
                         <td className="p-3.5 pl-5">
                           <div className="flex items-center space-x-2.5">
-                            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-[#EFF4FF] flex items-center justify-center shrink-0 border border-[#DBE6FF]">
                               <User className="w-3.5 h-3.5 text-primary" />
                             </div>
-                            <span className="font-bold text-slate-700">{d.name}</span>
+                            <span className="font-bold text-[#0A0A0A]">{d.name}</span>
                           </div>
                         </td>
                         <td className="p-3.5 font-mono font-bold">{d.trips}</td>
                         <td className="p-3.5 font-mono">{d.distance.toLocaleString()}</td>
                         <td className="p-3.5">
-                          <span className={`font-black ${d.safety >= 95 ? 'text-emerald-600' : d.safety >= 90 ? 'text-primary' : 'text-amber-600'}`}>{d.safety}%</span>
+                          <span className={`font-black ${d.safety >= 95 ? 'text-[#059669]' : d.safety >= 90 ? 'text-primary' : 'text-[#D97706]'}`}>{d.safety}%</span>
                         </td>
-                        <td className="p-3.5 font-mono text-emerald-600 font-bold">{d.efficiency} mpg</td>
+                        <td className="p-3.5 font-mono text-[#059669] font-bold">{d.efficiency} mpg</td>
                         <td className="p-3.5">
-                          <span className={`font-bold ${d.incidents === 0 ? 'text-emerald-600' : 'text-rose-500'}`}>{d.incidents}</span>
+                          <span className={`font-bold ${d.incidents === 0 ? 'text-[#059669]' : 'text-[#DC2626]'}`}>{d.incidents}</span>
                         </td>
                         <td className="p-3.5 font-mono font-bold">{d.onTime}%</td>
                         <td className="p-3.5 w-32">
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full" style={{ width: `${d.onTime}%` }} />
                           </div>
                         </td>
@@ -758,16 +740,16 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
         {/* COST ANALYTICS */}
         {activeTab === 'costs' && (
           <motion.div key="costs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
               {[
                 { label: 'Fuel Cost', value: '$18,400', pct: 72, color: '#2563EB', sub: '72% of total ops cost' },
-                { label: 'Maintenance', value: '$8,940', pct: 35, color: '#F59E0B', sub: '+13% vs last quarter' },
-                { label: 'Tolls & Misc', value: '$3,520', pct: 14, color: '#64748B', sub: 'Tolls, parking, other' },
+                { label: 'Maintenance', value: '$8,940', pct: 35, color: '#D97706', sub: '+13% vs last quarter' },
+                { label: 'Tolls & Misc', value: '$3,520', pct: 14, color: '#6B7280', sub: 'Tolls, parking, other' },
               ].map(c => (
-                <div key={c.label} className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-3">
-                  <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider">{c.label}</span>
+                <div key={c.label} className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-3">
+                  <span className="text-[9px] uppercase font-black text-[#9CA3AF] tracking-wider block">{c.label}</span>
                   <h3 className="text-2xl font-black" style={{ color: c.color }}>{c.value}</h3>
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${c.pct}%` }}
@@ -776,18 +758,18 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
                       style={{ backgroundColor: c.color }}
                     />
                   </div>
-                  <p className="text-[10px] font-semibold text-slate-400">{c.sub}</p>
+                  <p className="text-[10px] font-semibold text-[#6B7280]">{c.sub}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2">6-Month Cost Trend</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+                <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2">6-Month Cost Trend</h3>
                 <AreaChart data={[38200, 39800, 42100, 44500, 45100, 46200]} labels={['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']} color="#2563EB" height={100} />
               </div>
-              <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight border-b border-slate-100 pb-2">Cost Efficiency Rankings</h3>
+              <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4">
+                <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight border-b border-[#F3F4F6] pb-2">Cost Efficiency Rankings</h3>
                 <div className="space-y-3 pt-1">
                   {vehicleMatrix.map(v => (
                     <HorizontalBar
@@ -795,7 +777,7 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
                       label={`${v.name} (${v.reg})`}
                       value={v.roi}
                       max={80}
-                      color={v.roi >= 58 ? '#22C55E' : v.roi >= 50 ? '#2563EB' : '#F59E0B'}
+                      color={v.roi >= 58 ? '#059669' : v.roi >= 50 ? '#2563EB' : '#D97706'}
                       suffix="% ROI"
                     />
                   ))}
@@ -807,6 +789,6 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
 
       </AnimatePresence>
 
-    </div>
+    </Reveal>
   );
 };

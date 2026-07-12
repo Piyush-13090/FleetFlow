@@ -88,27 +88,27 @@ export const LiveTripMap: React.FC = () => {
   const mapHeight = 280;
 
   return (
-    <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm select-none mt-6">
+    <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm select-none mt-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div className="flex items-center space-x-2">
           <div className="p-1.5 rounded-lg bg-blue-50 text-primary">
             <Compass className="w-4 h-4 animate-spin-slow" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-text-dark">Live Trip Monitor</h3>
+            <h3 className="text-sm cc-display font-semibold text-[#0A0A0A]">Live Trip Monitor</h3>
             <p className="text-[10px] text-slate-500 font-medium">Real-time dispatch tracking and telemetry</p>
           </div>
         </div>
 
         {/* Route Selector tab buttons */}
-        <div className="flex space-x-1.5 bg-slate-50 p-1 border border-border-gray rounded-xl self-start sm:self-auto">
+        <div className="flex space-x-1.5 bg-slate-50 p-1 border border-[#E5E7EB] rounded-xl self-start sm:self-auto">
           {activeTripsMock.map((trip) => (
             <button
               key={trip.id}
               onClick={() => setSelectedTrip(trip)}
               className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
                 selectedTrip.id === trip.id 
-                  ? 'bg-white text-primary shadow-sm border border-slate-100' 
+                  ? 'bg-white text-primary cc-shadow-sm border border-slate-100' 
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -300,9 +300,9 @@ export const LiveTripMap: React.FC = () => {
         </div>
 
         {/* Detailed Dispatch Info Panel */}
-        <div className="bg-slate-50 border border-border-gray p-4 rounded-xl flex flex-col justify-between">
+        <div className="bg-slate-50 border border-[#E5E7EB] p-4 rounded-xl flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border-gray/70">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB]/70">
               <span className="text-[11px] font-black text-slate-800 tracking-tight uppercase">Trip Details</span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 ${
                 selectedTrip.status === 'Delayed' 
@@ -334,7 +334,7 @@ export const LiveTripMap: React.FC = () => {
               </div>
 
               {/* Cargo & ETA grids */}
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border-gray/70 text-left">
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E5E7EB]/70 text-left">
                 <div>
                   <span className="text-[9px] uppercase font-bold text-slate-400 block">Cargo Payload</span>
                   <span className="text-[11px] font-bold text-slate-700">{selectedTrip.cargo}</span>
@@ -360,7 +360,7 @@ export const LiveTripMap: React.FC = () => {
 
           <button 
             onClick={() => alert(`Full dispatch command telemetry for ${selectedTrip.id} opened.`)}
-            className="w-full mt-4 py-2 bg-white hover:bg-slate-100/50 border border-border-gray text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center space-x-1.5 shadow-sm group"
+            className="w-full mt-4 py-2 bg-white hover:bg-slate-100/50 border border-[#E5E7EB] text-slate-600 hover:text-slate-800 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center space-x-1.5 cc-shadow-sm group"
           >
             <Info className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
             <span>Open Command Terminal</span>

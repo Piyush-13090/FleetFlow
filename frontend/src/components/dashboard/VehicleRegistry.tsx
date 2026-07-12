@@ -27,6 +27,14 @@ import {
 import { AddEditVehicle } from './AddEditVehicle';
 import { VehicleDetails } from './VehicleDetails';
 import { apiFetch } from '../../lib/api';
+import { SectionHeader } from '../ui/SectionHeader';
+import { KpiTile } from '../ui/KpiTile';
+import { StatusPill } from '../ui/StatusPill';
+import { Segmented } from '../ui/Segmented';
+import { Ring } from '../ui/Ring';
+import { Reveal } from '../ui/Reveal';
+import { CardLabel } from '../ui/Card';
+import { Sparkline as SharedSparkline } from '../ui/Sparkline';
 
 export interface VehicleData {
   registrationNumber: string;
@@ -59,26 +67,6 @@ export interface VehicleData {
 interface VehicleRegistryProps {
   onShowToast: (msg: string) => void;
 }
-
-// Custom SVG sparkline generator
-const Sparkline: React.FC<{ dataPoints: number[]; color: string }> = ({ dataPoints, color }) => {
-  const width = 80;
-  const height = 24;
-  const max = Math.max(...dataPoints);
-  const min = Math.min(...dataPoints);
-  const range = max - min || 1;
-  const points = dataPoints.map((val, idx) => {
-    const x = (idx / (dataPoints.length - 1)) * width;
-    const y = height - 2 - ((val - min) / range) * (height - 6);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const pathD = `M ${points}`;
-  return (
-    <svg width={width} height={height} className="overflow-visible select-none">
-      <path d={pathD} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
 
 export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast }) => {
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
@@ -167,8 +155,6 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
     }
   };
 
-
-
   const handleExportCSV = () => {
     onShowToast('Generating CSV report: Vehicles-Registry-Export.csv');
     setTimeout(() => {
@@ -208,43 +194,6 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
     maintenance: vehicles.filter(v => v.status === 'In Shop').length
   };
 
-  const getStatusBadge = (status: VehicleData['status']) => {
-    switch (status) {
-      case 'Available':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 animate-pulse">
-            Available
-          </span>
-        );
-      case 'On Trip':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
-            On Trip
-          </span>
-        );
-      case 'In Shop':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
-            In Shop
-          </span>
-        );
-      case 'Retired':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-            Retired
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
-  // Circular health ring maths
-  const radius = 28;
-  const circumference = 2 * Math.PI * radius;
-  const selectedHealth = selectedVehicle?.health || 100;
-  const healthOffset = circumference - (selectedHealth / 100) * circumference;
-
   if (registryView === 'add' || registryView === 'edit') {
     return (
       <AddEditVehicle
@@ -271,148 +220,112 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
   }
 
   return (
-    <div className="space-y-6 select-none relative pb-16">
+    <Reveal className="space-y-6 select-none relative pb-16">
       {/* Header Panel */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-gray/50">
-        <div className="text-left">
-          <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">
-            Vehicle Registry
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-1 leading-none">
-            Manage, monitor, and organize every fleet vehicle from one centralized workspace.
-          </p>
-        </div>
+      <SectionHeader
+        title="Vehicle Registry"
+        subtitle="Manage, monitor, and organize every fleet vehicle from one centralized workspace."
+        actions={
+          <>
+            <button
+              onClick={() => { setVehicleToEdit(null); setRegistryView('add'); }}
+              className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] cc-shadow-sm hover:scale-[1.02] transition-[transform,background-color] cursor-pointer flex items-center space-x-1.5"
+            >
+              <Plus className="w-4.5 h-4.5" />
+              <span>Add Vehicle</span>
+            </button>
+            
+            <button
+              onClick={handleExportCSV}
+              className="px-3 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-semibold rounded-[12px] transition-all cursor-pointer flex items-center space-x-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
 
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <button
-            onClick={() => { setVehicleToEdit(null); setRegistryView('add'); }}
-            className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow hover:scale-102 transition-all cursor-pointer flex items-center space-x-1.5"
-          >
-            <Plus className="w-4.5 h-4.5" />
-            <span>Add Vehicle</span>
-          </button>
-          
-          <button
-            onClick={handleExportCSV}
-            className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
+            <button
+              onClick={handleImportCSV}
+              className="px-3 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-semibold rounded-[12px] transition-all cursor-pointer flex items-center space-x-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Import Vehicles</span>
+            </button>
 
-          <button
-            onClick={handleImportCSV}
-            className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Import Vehicles</span>
-          </button>
-
-          <button
-            onClick={handleRefresh}
-            className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-700 rounded-xl transition-all cursor-pointer"
-            title="Refresh Registry Data"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={handleRefresh}
+              className="p-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#6B7280] hover:text-[#0A0A0A] rounded-[12px] transition-all cursor-pointer"
+              title="Refresh Registry Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </>
+        }
+      />
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1 */}
-        <div className="p-5 bg-white border border-border-gray rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 relative group cursor-pointer">
-          <div className="flex justify-between items-start">
-            <div className="p-2 bg-blue-50 text-primary rounded-xl shrink-0">
-              <Compass className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+100% Health</span>
-          </div>
-          <div className="mt-4 flex justify-between items-end">
-            <div>
-              <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">{kpis.total}</h3>
-              <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">Total Vehicles</p>
-            </div>
-            <div className="w-16 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-              <Sparkline dataPoints={[4, 5, 5, 5, 6, 6, 6]} color="#2563EB" />
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2 */}
-        <div className="p-5 bg-white border border-border-gray rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 relative group cursor-pointer">
-          <div className="flex justify-between items-start">
-            <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl shrink-0">
-              <CheckCircle className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Available</span>
-          </div>
-          <div className="mt-4 flex justify-between items-end">
-            <div>
-              <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">{kpis.available}</h3>
-              <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">Available Fleet</p>
-            </div>
-            <div className="w-16 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-              <Sparkline dataPoints={[1, 2, 1, 2, 2, 1, 2]} color="#22C55E" />
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 3 */}
-        <div className="p-5 bg-white border border-border-gray rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 relative group cursor-pointer">
-          <div className="flex justify-between items-start">
-            <div className="p-2 bg-blue-50 text-primary rounded-xl shrink-0">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">On Mission</span>
-          </div>
-          <div className="mt-4 flex justify-between items-end">
-            <div>
-              <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">{kpis.onTrip}</h3>
-              <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">Vehicles On Trip</p>
-            </div>
-            <div className="w-16 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-              <Sparkline dataPoints={[2, 3, 3, 2, 3, 4, 3]} color="#2563EB" />
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 4 */}
-        <div className="p-5 bg-white border border-border-gray rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300 relative group cursor-pointer">
-          <div className="flex justify-between items-start">
-            <div className="p-2 bg-rose-50 text-rose-500 rounded-xl shrink-0">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">Shop Care</span>
-          </div>
-          <div className="mt-4 flex justify-between items-end">
-            <div>
-              <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">{kpis.maintenance}</h3>
-              <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">In Maintenance</p>
-            </div>
-            <div className="w-16 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-              <Sparkline dataPoints={[1, 0, 1, 1, 2, 1, 1]} color="#EF4444" />
-            </div>
-          </div>
-        </div>
+        <KpiTile
+          icon={Compass}
+          value={kpis.total}
+          label="Total Vehicles"
+          sublabel="Currently operational"
+          delta="+8%"
+          deltaUp={true}
+          spark={[4, 5, 5, 5, 6, 6, 6]}
+          color="#2563EB"
+          tint="#EFF4FF"
+        />
+        <KpiTile
+          icon={CheckCircle}
+          value={kpis.available}
+          label="Available Fleet"
+          sublabel="Ready for dispatch"
+          delta="Available"
+          deltaUp={true}
+          spark={[1, 2, 1, 2, 2, 1, 2]}
+          color="#059669"
+          tint="#ECFDF5"
+        />
+        <KpiTile
+          icon={TrendingUp}
+          value={kpis.onTrip}
+          label="Vehicles On Trip"
+          sublabel="Currently dispatched"
+          delta="On Mission"
+          deltaUp={true}
+          spark={[2, 3, 3, 2, 3, 4, 3]}
+          color="#2563EB"
+          tint="#EFF4FF"
+        />
+        <KpiTile
+          icon={Wrench}
+          value={kpis.maintenance}
+          label="In Maintenance"
+          sublabel="Service ongoing"
+          delta="Shop Care"
+          deltaUp={false}
+          spark={[1, 0, 1, 1, 2, 1, 1]}
+          color="#DC2626"
+          tint="#FEF2F2"
+        />
       </div>
 
       {/* Sticky Search & Filter ribbon */}
-      <div className="sticky top-16 z-15 bg-white border border-border-gray p-4 rounded-2xl flex flex-wrap items-center gap-3.5 shadow-sm">
-        <div className="flex items-center space-x-2 text-slate-800 border-r border-border-gray pr-3.5 py-1 shrink-0">
+      <div className="sticky top-0 z-15 bg-white border border-[#E5E7EB] p-4 rounded-[16px] flex flex-wrap items-center gap-3.5 cc-shadow-sm">
+        <div className="flex items-center space-x-2 text-[#0A0A0A] border-r border-[#E5E7EB] pr-3.5 py-1 shrink-0">
           <Filter className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold">Search & Filters</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Search & Filters</span>
         </div>
 
         {/* Global Search Input */}
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
           <input
             type="text"
             placeholder="Search registration, name, driver..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border-gray rounded-xl text-xs focus:bg-white focus:outline-none input-glow transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-xs focus:bg-white focus:outline-none input-glow transition-all"
           />
         </div>
 
@@ -420,7 +333,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer cc-focus"
         >
           <option value="All Types">All Configurations</option>
           <option value="Semi-Truck">Semi-Truck</option>
@@ -432,7 +345,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer cc-focus"
         >
           <option value="All Statuses">All Statuses</option>
           <option value="Available">Available</option>
@@ -445,7 +358,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         <select
           value={selectedRegion}
           onChange={(e) => setSelectedRegion(e.target.value)}
-          className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer cc-focus"
         >
           <option value="All Regions">All Regions</option>
           <option value="East Coast">East Coast</option>
@@ -455,9 +368,9 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         </select>
 
         {/* Capacity Slider */}
-        <div className="flex items-center space-x-2 border border-border-gray rounded-xl px-3 py-2 bg-slate-50 shrink-0">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Max Load:</span>
+        <div className="flex items-center space-x-2 border border-[#E5E7EB] rounded-[12px] px-3 py-2 bg-[#F9FAFB] shrink-0">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#9CA3AF]" />
+          <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Max Load:</span>
           <input 
             type="range" 
             min="4000" 
@@ -465,16 +378,16 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
             step="1000"
             value={maxCapacity}
             onChange={(e) => setMaxCapacity(Number(e.target.value))}
-            className="w-20 accent-primary cursor-pointer h-1 rounded bg-slate-200"
+            className="w-20 accent-primary cursor-pointer h-1 rounded bg-[#E5E7EB]"
           />
-          <span className="text-[11px] font-bold text-slate-700 font-mono">{(maxCapacity / 1000).toFixed(0)}k lbs</span>
+          <span className="text-[11px] font-bold text-[#0A0A0A] font-mono tabular-nums">{(maxCapacity / 1000).toFixed(0)}k lbs</span>
         </div>
 
         {/* Sort option */}
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer cc-focus"
         >
           <option value="odometer">Sort by Odometer</option>
           <option value="cost">Sort by Cost</option>
@@ -485,7 +398,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         {(searchQuery || selectedType !== 'All Types' || selectedStatus !== 'All Statuses' || selectedRegion !== 'All Regions' || maxCapacity !== 50000) && (
           <button
             onClick={handleResetFilters}
-            className="px-2 py-1 text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer"
+            className="px-2 py-1 text-xs font-bold text-[#9CA3AF] hover:text-[#4B5563] cursor-pointer"
           >
             Reset
           </button>
@@ -498,27 +411,16 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
         <div className="lg:col-span-2 space-y-4">
           {/* Table vs Grid Switcher */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-800 tracking-tight uppercase">Fleet Database Listing</span>
-            <div className="flex p-0.5 bg-slate-100 border border-border-gray rounded-xl">
-              <button
-                onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === 'table' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'
-                }`}
-                title="Table View"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'
-                }`}
-                title="Grid visual card view"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-            </div>
+            <span className="text-xs font-bold text-[#4B5563] tracking-tight uppercase">Fleet Database Listing</span>
+            <Segmented
+              size="sm"
+              value={viewMode}
+              onChange={(val) => setViewMode(val as 'table' | 'grid')}
+              options={[
+                { id: 'table', label: <><List className="w-3.5 h-3.5" /><span>List</span></> },
+                { id: 'grid', label: <><LayoutGrid className="w-3.5 h-3.5" /><span>Grid</span></> }
+              ]}
+            />
           </div>
 
           <AnimatePresence mode="wait">
@@ -527,16 +429,16 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white border border-border-gray rounded-2xl p-16 text-center shadow-sm"
+                className="bg-white border border-[#E5E7EB] rounded-[16px] p-16 text-center cc-shadow-sm"
               >
-                <Inbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-sm font-bold text-text-dark">No Vehicles Found</h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                <Inbox className="w-12 h-12 text-[#9CA3AF] mx-auto mb-4" />
+                <h3 className="text-sm font-bold text-[#0A0A0A]">No Vehicles Found</h3>
+                <p className="text-xs text-[#6B7280] mt-1 max-w-sm mx-auto leading-relaxed">
                   Start building your fleet by registering your first vehicle or try resetting search filters.
                 </p>
                 <button
                   onClick={() => { setVehicleToEdit(null); setRegistryView('add'); }}
-                  className="mt-6 px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  className="mt-6 px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-[12px] transition-colors cursor-pointer"
                 >
                   Register Vehicle
                 </button>
@@ -548,12 +450,12 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden"
+                className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden"
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs">
+                <div className="overflow-x-auto w-full">
+                  <table className="w-full min-w-[850px] border-collapse text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-border-gray/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB] text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">
                         <th className="p-3.5 pl-5">Vehicle Name</th>
                         <th className="p-3.5">Registration</th>
                         <th className="p-3.5">Type</th>
@@ -564,7 +466,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                         <th className="p-3.5 text-right pr-5">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-gray/50">
+                    <tbody className="divide-y divide-[#E5E7EB]/50">
                       {filteredVehicles.map((veh) => {
                         const isSelected = selectedVehicle?.registrationNumber === veh.registrationNumber;
                         const isExpanded = !!expandedRows[veh.registrationNumber];
@@ -573,52 +475,54 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                           <React.Fragment key={veh.registrationNumber}>
                             <tr
                               onClick={() => handleRowClick(veh)}
-                              className={`hover:bg-slate-50/50 transition-colors cursor-pointer group ${
-                                isSelected ? 'bg-primary/[0.02]' : ''
+                              className={`hover:bg-[#F9FAFB]/50 transition-colors cursor-pointer group ${
+                                isSelected ? 'bg-[#EFF4FF]/20' : ''
                               }`}
                             >
-                              <td className="p-3.5 pl-5 font-semibold text-text-dark">
+                              <td className="p-3.5 pl-5 font-semibold text-[#0A0A0A]">
                                 <div className="flex items-center space-x-2.5">
                                   <button
                                     onClick={(e) => toggleRowExpand(veh.registrationNumber, e)}
-                                    className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                                    className="p-1 rounded hover:bg-[#F3F4F6] text-[#9CA3AF] hover:text-[#4B5563] transition-colors"
                                   >
                                     <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                                   </button>
-                                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0">
+                                  <div className="w-8 h-8 rounded-[8px] bg-[#EFF4FF] text-primary flex items-center justify-center shrink-0">
                                     <Truck className="w-4 h-4" />
                                   </div>
                                   <div className="flex flex-col min-w-0">
                                     <span className="font-bold leading-none">{veh.name}</span>
-                                    <span className="text-[10px] text-slate-400 mt-1 leading-none">{veh.region}</span>
+                                    <span className="text-[10px] text-[#9CA3AF] mt-1.5 leading-none">{veh.region}</span>
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-3.5 font-bold font-mono text-slate-600">{veh.registrationNumber}</td>
-                              <td className="p-3.5 text-slate-500 font-medium">{veh.type}</td>
-                              <td className="p-3.5 font-mono text-slate-700 font-semibold">{veh.odometer.toLocaleString()} mi</td>
-                              <td className="p-3.5 font-mono text-slate-600 font-medium">{veh.capacity.toLocaleString()} lbs</td>
-                              <td className="p-3.5">{getStatusBadge(veh.status)}</td>
-                              <td className="p-3.5 text-slate-600 font-semibold">{veh.assignedDriver}</td>
+                              <td className="p-3.5 font-bold font-mono text-[#4B5563]">{veh.registrationNumber}</td>
+                              <td className="p-3.5 text-[#4B5563] font-medium">{veh.type}</td>
+                              <td className="p-3.5 font-mono text-[#0A0A0A] font-semibold tabular-nums">{veh.odometer.toLocaleString()} mi</td>
+                              <td className="p-3.5 font-mono text-[#4B5563] font-medium tabular-nums">{veh.capacity.toLocaleString()} lbs</td>
+                              <td className="p-3.5">
+                                <StatusPill status={veh.status} pulse={veh.status === 'Available'} />
+                              </td>
+                              <td className="p-3.5 text-[#4B5563] font-semibold">{veh.assignedDriver}</td>
                               <td className="p-3.5 text-right pr-5">
                                 <div className="flex items-center justify-end space-x-1 opacity-60 group-hover:opacity-100 transition-opacity">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setVehicleToEdit(veh); setRegistryView('details'); }}
-                                    className="p-1 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1 text-[#9CA3AF] hover:text-[#2563EB] hover:bg-[#EFF4FF] rounded-[8px] transition-colors cursor-pointer"
                                     title="View Details"
                                   >
                                     <Eye className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setVehicleToEdit(veh); setRegistryView('edit'); }}
-                                    className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1 text-[#9CA3AF] hover:text-[#D97706] hover:bg-[#FFFBEB] rounded-[8px] transition-colors cursor-pointer"
                                     title="Edit Vehicle"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleDeleteVehicle(veh.registrationNumber, e); }}
-                                    className="p-1 text-slate-400 hover:text-danger-red hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1 text-[#9CA3AF] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-[8px] transition-colors cursor-pointer"
                                     title="Decommission vehicle"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -630,7 +534,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                             {/* Inline Row Expansion Details */}
                             {isExpanded && (
                               <tr>
-                                <td colSpan={8} className="p-0 bg-slate-50 border-t border-b border-border-gray/70">
+                                <td colSpan={8} className="p-0 bg-[#F9FAFB] border-t border-b border-[#E5E7EB]">
                                   <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
@@ -638,81 +542,81 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                                     className="p-5 overflow-hidden grid grid-cols-1 md:grid-cols-3 gap-5"
                                   >
                                     {/* Column 1: Specifications */}
-                                    <div className="bg-white border border-border-gray/60 p-4 rounded-xl space-y-3 shadow-sm text-left">
-                                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Specifications</h4>
-                                      <div className="grid grid-cols-2 gap-y-2 gap-x-1.5 text-[11px] font-semibold">
+                                    <div className="bg-white border border-[#EEF1F4] p-4 rounded-[12px] space-y-3 cc-shadow-sm text-left">
+                                      <CardLabel>Specifications</CardLabel>
+                                      <div className="grid grid-cols-2 gap-y-2.5 gap-x-2 text-[11px] font-semibold">
                                         <div>
-                                          <span className="text-slate-400 block text-[9.5px]">Engine Model</span>
-                                          <span className="text-slate-700">{veh.specs.engine}</span>
+                                          <span className="text-[#9CA3AF] block text-[9.5px] font-medium leading-none mb-1">Engine Model</span>
+                                          <span className="text-[#0A0A0A]">{veh.specs.engine}</span>
                                         </div>
                                         <div>
-                                          <span className="text-slate-400 block text-[9.5px]">Fuel System</span>
-                                          <span className="text-slate-700">{veh.specs.fuelType} ({veh.specs.fuelCapacity} Gal)</span>
+                                          <span className="text-[#9CA3AF] block text-[9.5px] font-medium leading-none mb-1">Fuel System</span>
+                                          <span className="text-[#0A0A0A]">{veh.specs.fuelType} ({veh.specs.fuelCapacity} Gal)</span>
                                         </div>
                                         <div>
-                                          <span className="text-slate-400 block text-[9.5px]">Fuel Economy</span>
-                                          <span className="text-slate-700 font-mono">{veh.specs.mpg} MPG</span>
+                                          <span className="text-[#9CA3AF] block text-[9.5px] font-medium leading-none mb-1">Fuel Economy</span>
+                                          <span className="text-[#0A0A0A] font-mono tabular-nums">{veh.specs.mpg} MPG</span>
                                         </div>
                                         <div>
-                                          <span className="text-slate-400 block text-[9.5px]">Acquisition Cost</span>
-                                          <span className="text-slate-700 font-mono">${veh.acquisitionCost.toLocaleString()}</span>
+                                          <span className="text-[#9CA3AF] block text-[9.5px] font-medium leading-none mb-1">Acquisition Cost</span>
+                                          <span className="text-[#0A0A0A] font-mono tabular-nums">${veh.acquisitionCost.toLocaleString()}</span>
                                         </div>
                                       </div>
                                     </div>
 
                                     {/* Column 2: Documents Upload Checklists */}
-                                    <div className="bg-white border border-border-gray/60 p-4 rounded-xl space-y-3 shadow-sm text-left">
-                                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Compliance Documents</h4>
+                                    <div className="bg-white border border-[#EEF1F4] p-4 rounded-[12px] space-y-3 cc-shadow-sm text-left">
+                                      <CardLabel>Compliance Documents</CardLabel>
                                       <div className="space-y-2">
                                         <div className="flex items-center justify-between text-[11px] font-bold">
-                                          <span className="text-slate-600 flex items-center">
+                                          <span className="text-[#4B5563] flex items-center">
                                             <FileText className="w-3.5 h-3.5 text-primary mr-1.5" />
                                             Insurance Policy
                                           </span>
                                           {veh.documents.includes('Insurance') ? (
-                                            <span className="text-emerald-600 flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Active</span>
+                                            <span className="text-[#059669] flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Active</span>
                                           ) : (
-                                            <span className="text-rose-500 flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired</span>
+                                            <span className="text-[#DC2626] flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired</span>
                                           )}
                                         </div>
                                         <div className="flex items-center justify-between text-[11px] font-bold">
-                                          <span className="text-slate-600 flex items-center">
+                                          <span className="text-[#4B5563] flex items-center">
                                             <FileText className="w-3.5 h-3.5 text-primary mr-1.5" />
                                             Registration Card
                                           </span>
                                           {veh.documents.includes('Registration') ? (
-                                            <span className="text-emerald-600 flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Active</span>
+                                            <span className="text-[#059669] flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Active</span>
                                           ) : (
-                                            <span className="text-rose-500 flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired</span>
+                                            <span className="text-[#DC2626] flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Expired</span>
                                           )}
                                         </div>
                                         <div className="flex items-center justify-between text-[11px] font-bold">
-                                          <span className="text-slate-600 flex items-center">
+                                          <span className="text-[#4B5563] flex items-center">
                                             <FileText className="w-3.5 h-3.5 text-primary mr-1.5" />
                                             IFTA Permits
                                           </span>
                                           {veh.documents.includes('Permits') ? (
-                                            <span className="text-emerald-600 flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Compliant</span>
+                                            <span className="text-[#059669] flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Compliant</span>
                                           ) : (
-                                            <span className="text-rose-500 flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Missing</span>
+                                            <span className="text-[#DC2626] flex items-center"><AlertTriangle className="w-3.5 h-3.5 mr-1" /> Missing</span>
                                           )}
                                         </div>
                                       </div>
                                     </div>
 
                                     {/* Column 3: Maintenance History */}
-                                    <div className="bg-white border border-border-gray/60 p-4 rounded-xl space-y-3 shadow-sm text-left">
-                                      <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Last Repair Logs</h4>
+                                    <div className="bg-white border border-[#EEF1F4] p-4 rounded-[12px] space-y-3 cc-shadow-sm text-left">
+                                      <CardLabel>Last Repair Logs</CardLabel>
                                       {veh.maintenanceHistory.length > 0 ? (
-                                        <div className="space-y-1 text-[11px]">
-                                          <div className="flex justify-between items-center text-slate-700 font-semibold">
-                                            <span className="truncate max-w-[100px]">{veh.maintenanceHistory[0].issue}</span>
-                                            <span className="font-bold font-mono text-slate-500">${veh.maintenanceHistory[0].cost}</span>
+                                        <div className="space-y-1.5 text-[11px]">
+                                          <div className="flex justify-between items-center text-[#0A0A0A] font-semibold">
+                                            <span className="truncate max-w-[120px]">{veh.maintenanceHistory[0].issue}</span>
+                                            <span className="font-bold font-mono text-[#4B5563] tabular-nums">${veh.maintenanceHistory[0].cost}</span>
                                           </div>
-                                          <span className="text-[9px] text-slate-400 block font-medium">Logged on {veh.maintenanceHistory[0].date}</span>
+                                          <span className="text-[9px] text-[#9CA3AF] block font-medium">Logged on {veh.maintenanceHistory[0].date}</span>
                                         </div>
                                       ) : (
-                                        <div className="text-[11px] text-slate-400 font-medium py-3 text-center">No maintenance logs found</div>
+                                        <div className="text-[11px] text-[#9CA3AF] font-medium py-3 text-center">No maintenance logs found</div>
                                       )}
                                     </div>
                                   </motion.div>
@@ -742,39 +646,45 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                       key={veh.registrationNumber}
                       onClick={() => handleRowClick(veh)}
                       whileHover={{ y: -4, scale: 1.01 }}
-                      className={`p-4 bg-white border rounded-2xl shadow-sm cursor-pointer text-left transition-all ${
-                        isSelected ? 'border-primary shadow-md shadow-primary/5' : 'border-border-gray'
+                      className={`p-4 bg-white border rounded-[16px] cc-shadow-sm cursor-pointer text-left transition-all ${
+                        isSelected ? 'border-primary shadow-md shadow-primary/5' : 'border-[#E5E7EB]'
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-[8px] bg-[#EFF4FF] text-primary flex items-center justify-center shrink-0">
                             <Truck className="w-4.5 h-4.5" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-text-dark text-xs">{veh.name}</h4>
-                            <span className="text-[10px] text-slate-400 font-semibold font-mono">{veh.registrationNumber}</span>
+                            <h4 className="font-bold text-[#0A0A0A] text-xs leading-none mb-1">{veh.name}</h4>
+                            <span className="text-[10px] text-[#9CA3AF] font-bold font-mono">{veh.registrationNumber}</span>
                           </div>
                         </div>
-                        {getStatusBadge(veh.status)}
+                        <StatusPill status={veh.status} pulse={veh.status === 'Available'} />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 text-[11px] font-semibold text-slate-600">
-                        <div>
-                          <span className="text-[9px] text-slate-400 block font-medium">Odometer</span>
-                          <span className="font-mono">{veh.odometer.toLocaleString()} mi</span>
+                      <div className="mt-4 flex justify-between items-end border-t border-[#E5E7EB]/50 pt-3">
+                        <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-[#4B5563] flex-1">
+                          <div>
+                            <span className="text-[9px] text-[#9CA3AF] block font-medium">Odometer</span>
+                            <span className="font-mono tabular-nums">{veh.odometer.toLocaleString()} mi</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-[#9CA3AF] block font-medium">Driver</span>
+                            <span>{veh.assignedDriver}</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-[#9CA3AF] block font-medium">Region</span>
+                            <span>{veh.region}</span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] text-[#9CA3AF] block font-medium">Fuel Level</span>
+                            <span className="text-[#2563EB] font-mono tabular-nums">82%</span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-[9px] text-slate-400 block font-medium">Driver</span>
-                          <span>{veh.assignedDriver}</span>
-                        </div>
-                        <div>
-                          <span className="text-[9px] text-slate-400 block font-medium">Region</span>
-                          <span>{veh.region}</span>
-                        </div>
-                        <div>
-                          <span className="text-[9px] text-slate-400 block font-medium">Fuel Level</span>
-                          <span className="text-primary font-mono">82%</span>
+                        <div className="w-16 shrink-0 opacity-80" title="Historical Utilization">
+                          <span className="text-[8px] text-[#9CA3AF] block font-bold text-right uppercase tracking-wider mb-1">Utilization</span>
+                          <SharedSparkline data={[65, 70, 72, 80, 84, 82, 84]} color="#2563EB" width={64} height={20} area />
                         </div>
                       </div>
                     </motion.div>
@@ -794,102 +704,77 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm text-left space-y-5"
+                className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm text-left space-y-5"
               >
                 {/* Visual Header */}
-                <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="pb-4 border-b border-[#E5E7EB] flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-black text-text-dark tracking-tight leading-none">
+                    <h3 className="text-sm font-bold text-[#0A0A0A] tracking-tight leading-none">
                       {selectedVehicle.name}
                     </h3>
-                    <span className="text-[11px] font-black font-mono text-primary mt-1.5 block leading-none">
+                    <span className="text-[11px] font-bold font-mono text-primary mt-1.5 block leading-none">
                       #{selectedVehicle.registrationNumber}
                     </span>
                   </div>
 
-                  {/* Circular health meter */}
-                  <div className="relative w-14 h-14 shrink-0">
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle
-                        cx="28"
-                        cy="28"
-                        r={radius}
-                        className="stroke-slate-100"
-                        strokeWidth="3.5"
-                        fill="transparent"
-                      />
-                      <circle
-                        cx="28"
-                        cy="28"
-                        r={radius}
-                        className="stroke-primary"
-                        strokeWidth="4"
-                        fill="transparent"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={healthOffset}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-text-dark">
-                      {selectedVehicle.health}%
-                    </div>
-                  </div>
+                  {/* Circular health meter with Ring primitive */}
+                  <Ring value={selectedVehicle.health} size={56} stroke={4} />
                 </div>
 
                 {/* Logistics details list */}
-                <div className="space-y-3.5 text-[11px] font-semibold text-slate-700">
+                <div className="space-y-3.5 text-[11px] font-semibold text-[#4B5563]">
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Vehicle Configuration</span>
-                    <span>{selectedVehicle.type}</span>
+                    <span className="text-[#9CA3AF] font-medium">Vehicle Configuration</span>
+                    <span className="text-[#0A0A0A]">{selectedVehicle.type}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Purchase Registry Date</span>
-                    <span>{selectedVehicle.purchaseDate}</span>
+                    <span className="text-[#9CA3AF] font-medium">Purchase Registry Date</span>
+                    <span className="text-[#0A0A0A]">{selectedVehicle.purchaseDate}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Current Odometer Log</span>
-                    <span className="font-mono">{selectedVehicle.odometer.toLocaleString()} miles</span>
+                    <span className="text-[#9CA3AF] font-medium">Current Odometer Log</span>
+                    <span className="font-mono text-[#0A0A0A] tabular-nums">{selectedVehicle.odometer.toLocaleString()} miles</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Corporate Region Hub</span>
-                    <span>{selectedVehicle.region}</span>
+                    <span className="text-[#9CA3AF] font-medium">Corporate Region Hub</span>
+                    <span className="text-[#0A0A0A]">{selectedVehicle.region}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400 font-medium">Insurance Policy Expiry</span>
-                    <span className="bg-blue-50 text-primary border border-primary/20 px-1.5 py-0.5 rounded text-[10px] font-black font-mono">
+                    <span className="text-[#9CA3AF] font-medium">Insurance Policy Expiry</span>
+                    <span className="bg-[#EFF4FF] text-primary border border-[#DBE6FF] px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold font-mono tabular-nums">
                       {selectedVehicle.insuranceExpiry}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Road Tax Compliance</span>
-                    <span className={selectedVehicle.roadTax === 'Compliant' ? 'text-emerald-600' : 'text-rose-500'}>
+                    <span className="text-[#9CA3AF] font-medium">Road Tax Compliance</span>
+                    <span className={selectedVehicle.roadTax === 'Compliant' ? 'text-[#059669]' : 'text-[#DC2626]'}>
                       {selectedVehicle.roadTax}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 font-medium">Assigned Driver Operator</span>
-                    <span className="text-primary font-bold">{selectedVehicle.assignedDriver}</span>
+                    <span className="text-[#9CA3AF] font-medium">Assigned Driver Operator</span>
+                    <span className="text-[#2563EB] font-bold">{selectedVehicle.assignedDriver}</span>
                   </div>
                 </div>
 
                 {/* Documents Indicator Icons */}
-                <div className="pt-4 border-t border-slate-100">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2.5">Upload Indicators</h4>
+                <div className="pt-4 border-t border-[#E5E7EB]">
+                  <CardLabel className="mb-2.5">Upload Indicators</CardLabel>
                   <div className="flex space-x-3">
-                    <div className={`p-2 rounded-xl border flex flex-col items-center justify-center flex-1 ${
-                      selectedVehicle.documents.includes('Insurance') ? 'bg-blue-50/50 border-primary/20 text-primary' : 'bg-slate-50 border-slate-200 text-slate-400'
+                    <div className={`p-2.5 rounded-[12px] border flex flex-col items-center justify-center flex-1 ${
+                      selectedVehicle.documents.includes('Insurance') ? 'bg-[#EFF4FF] border-[#DBE6FF] text-[#2563EB]' : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#9CA3AF]'
                     }`}>
                       <ShieldCheck className="w-5 h-5 mb-1" />
                       <span className="text-[9px] font-bold">Insurance</span>
                     </div>
-                    <div className={`p-2 rounded-xl border flex flex-col items-center justify-center flex-1 ${
-                      selectedVehicle.documents.includes('Registration') ? 'bg-blue-50/50 border-primary/20 text-primary' : 'bg-slate-50 border-slate-200 text-slate-400'
+                    <div className={`p-2.5 rounded-[12px] border flex flex-col items-center justify-center flex-1 ${
+                      selectedVehicle.documents.includes('Registration') ? 'bg-[#EFF4FF] border-[#DBE6FF] text-[#2563EB]' : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#9CA3AF]'
                     }`}>
                       <FileText className="w-5 h-5 mb-1" />
                       <span className="text-[9px] font-bold">Registration</span>
                     </div>
-                    <div className={`p-2 rounded-xl border flex flex-col items-center justify-center flex-1 ${
-                      selectedVehicle.documents.includes('Permits') ? 'bg-blue-50/50 border-primary/20 text-primary' : 'bg-slate-50 border-slate-200 text-slate-400'
+                    <div className={`p-2.5 rounded-[12px] border flex flex-col items-center justify-center flex-1 ${
+                      selectedVehicle.documents.includes('Permits') ? 'bg-[#EFF4FF] border-[#DBE6FF] text-[#2563EB]' : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#9CA3AF]'
                     }`}>
                       <SlidersHorizontal className="w-5 h-5 mb-1" />
                       <span className="text-[9px] font-bold">Permits</span>
@@ -898,22 +783,22 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
                 </div>
 
                 {/* Recent Vehicle Activity Timeline */}
-                <div className="pt-4 border-t border-slate-100">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-3">Recent Activity Timeline</h4>
-                  <div className="relative pl-5 space-y-3.5 text-left border-l-2 border-primary/10">
+                <div className="pt-4 border-t border-[#E5E7EB]">
+                  <CardLabel className="mb-3">Recent Activity Timeline</CardLabel>
+                  <div className="relative pl-5 space-y-3.5 text-left border-l border-[#E5E7EB]">
                     {selectedVehicle.timeline.map((item, idx) => (
-                      <div key={idx} className="relative text-[11px] font-semibold text-slate-700">
+                      <div key={idx} className="relative text-[11px] font-semibold text-[#4B5563]">
                         {/* Dot marker */}
-                        <div className="absolute -left-[25px] top-1 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full" />
-                        <span className="text-slate-700 block leading-tight">{item.event}</span>
-                        <span className="text-[9px] text-slate-400 font-mono block mt-0.5">{item.date}</span>
+                        <div className="absolute -left-[21px] top-1 w-2 h-2 bg-[#2563EB] border border-white rounded-full" />
+                        <span className="text-[#0A0A0A] block leading-tight">{item.event}</span>
+                        <span className="text-[9px] text-[#9CA3AF] font-mono block mt-0.5 tabular-nums">{item.date}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </motion.div>
             ) : (
-              <div className="bg-slate-50 border border-border-gray p-10 rounded-2xl text-center text-slate-400 text-xs font-semibold py-20">
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] p-10 rounded-[16px] text-center text-[#9CA3AF] text-xs font-semibold py-20">
                 Select a vehicle from the registry to inspect telemetry and documents
               </div>
             )}
@@ -934,23 +819,23 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
               >
                 <button
                   onClick={() => { setVehicleToEdit(null); setRegistryView('add'); setIsSpeedDialOpen(false); }}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-border-gray text-[11px] font-bold rounded-xl shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer"
+                  className="px-3.5 py-2 bg-white hover:bg-[#F9FAFB] text-[#4B5563] border border-[#E5E7EB] text-[11px] font-bold rounded-[12px] cc-shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer hover:text-[#0A0A0A]"
                 >
-                  <Plus className="w-3.5 h-3.5 text-primary" />
+                  <Plus className="w-3.5 h-3.5 text-[#2563EB]" />
                   <span>Register Vehicle</span>
                 </button>
                 <button
                   onClick={() => { handleImportCSV(); setIsSpeedDialOpen(false); }}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-border-gray text-[11px] font-bold rounded-xl shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer"
+                  className="px-3.5 py-2 bg-white hover:bg-[#F9FAFB] text-[#4B5563] border border-[#E5E7EB] text-[11px] font-bold rounded-[12px] cc-shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer hover:text-[#0A0A0A]"
                 >
-                  <Upload className="w-3.5 h-3.5 text-primary" />
+                  <Upload className="w-3.5 h-3.5 text-[#2563EB]" />
                   <span>Import Fleet</span>
                 </button>
                 <button
                   onClick={() => { onShowToast('Activating camera scanner...'); setIsSpeedDialOpen(false); }}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-border-gray text-[11px] font-bold rounded-xl shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer"
+                  className="px-3.5 py-2 bg-white hover:bg-[#F9FAFB] text-[#4B5563] border border-[#E5E7EB] text-[11px] font-bold rounded-[12px] cc-shadow-lg flex items-center space-x-1.5 whitespace-nowrap cursor-pointer hover:text-[#0A0A0A]"
                 >
-                  <FileText className="w-3.5 h-3.5 text-primary" />
+                  <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
                   <span>Scan Registration</span>
                 </button>
               </motion.div>
@@ -961,13 +846,12 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
             onMouseEnter={() => setIsSpeedDialOpen(true)}
             onMouseLeave={() => setIsSpeedDialOpen(false)}
             onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
-            className="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-2xl hover:scale-105 transition-all border-2 border-white cursor-pointer"
+            className="w-12 h-12 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center shadow-2xl hover:scale-105 transition-all border border-[#E5E7EB] cursor-pointer"
           >
             <SlidersHorizontal className="w-5 h-5" />
           </button>
         </div>
       </div>
-
-    </div>
+    </Reveal>
   );
 };

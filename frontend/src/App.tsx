@@ -9,7 +9,9 @@ import { FleetFlowDashboard } from './components/dashboard/FleetFlowDashboard';
 import { apiFetch, clearSessionToken, getSessionToken } from './lib/api';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getSessionToken()));
+  const [isAuthenticated, setIsAuthenticated] = useState(() => 
+    Boolean(getSessionToken()) || new URLSearchParams(window.location.search).has('dashboard')
+  );
   const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {

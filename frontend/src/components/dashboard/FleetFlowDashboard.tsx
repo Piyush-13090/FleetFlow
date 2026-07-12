@@ -4,8 +4,11 @@ import {
   RefreshCw, 
   Check
 } from 'lucide-react';
-import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
+import { ProfileNavDrawer } from './ProfileNavDrawer';
+import { CommandCenterSidebar } from './CommandCenterSidebar';
+import { CommandPalette } from './CommandPalette';
+import { FleetPulse } from './FleetPulse';
 import { FiltersPanel } from './FiltersPanel';
 import { KpiGrid } from './KpiGrid';
 import { AnalyticsSection } from './AnalyticsSection';
@@ -163,6 +166,20 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
 
   // Modal control states
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+
+  // Global ⌘K / Ctrl+K opens the command palette
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [activeActionTab, setActiveActionTab] = useState('trip');
 
@@ -359,53 +376,74 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
 
 
   return (
-    <div className="min-h-screen w-full flex bg-bg-main relative overflow-x-hidden font-sans">
-      {/* Left Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} />
+    <div className="h-screen w-screen flex bg-[#FBFCFD] relative overflow-hidden cc-body text-[#0A0A0A]">
+      {/* Command-center sidebar (collapsible, keyboard-navigable) */}
+      <CommandCenterSidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={onLogout}
+        onOpenPalette={() => setIsPaletteOpen(true)}
+        unread={notifications.length}
+      />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main column */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+        {/* Top Navigation */}
         <TopNav
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onOpenQuickAdd={() => triggerQuickAction('trip')}
           onToggleNotifications={() => setIsNotificationOpen(true)}
+          onOpenProfile={() => setIsProfileOpen(true)}
           unreadNotifications={notifications.length}
           userProfile={profile}
         />
 
+        {/* Profile drawer (mobile / account nav) */}
+        <ProfileNavDrawer
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onLogout={onLogout}
+        />
+
         {/* Dynamic Page Rendering */}
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-[1600px] mx-auto w-full">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-y-auto max-w-[1600px] mx-auto w-full">
           {activeTab === 'dashboard' ? (
             <>
               {/* Hero Section */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-gray/50">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#E5E7EB]">
                 <div className="text-left">
-                  <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">Overview</span>
+                  <h1 className="cc-display text-[28px] font-bold text-[#0A0A0A] tracking-tight mt-1">
                     Fleet Operations Dashboard
                   </h1>
-                  <p className="text-xs text-slate-500 font-medium mt-1 leading-none">
+                  <p className="text-[13px] text-[#6B7280] mt-1.5">
                     Monitor fleet performance, dispatch activities, maintenance, and operational health in real time.
                   </p>
                 </div>
 
-                <div className="flex items-center space-x-3.5 self-start md:self-auto select-none">
+                <div className="flex items-center gap-4 self-start md:self-auto select-none">
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 font-bold block leading-none">TELEMETRY LOCK</span>
-                    <span className="text-[11px] font-bold text-slate-500 font-mono mt-1 block">
+                    <span className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-[0.12em] block leading-none">Telemetry Lock</span>
+                    <span className="text-[11px] font-semibold text-[#6B7280] tabular-nums mt-1.5 block">
                       Last synced: {lastSynced}
                     </span>
                   </div>
 
                   <button
                     onClick={handleRefresh}
-                    className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow hover:scale-102 transition-all duration-200 cursor-pointer flex items-center space-x-2"
+                    className="cc-focus px-4 min-h-[40px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[13px] font-semibold rounded-[12px] cc-shadow-sm hover:scale-[1.02] transition-[transform,background] flex items-center gap-2"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                     <span>Refresh Data</span>
                   </button>
                 </div>
               </div>
+
+              {/* Signature fleet-command hero gauge */}
+              <FleetPulse data={kpis} />
 
               {/* Filters Panel */}
               <FiltersPanel
@@ -424,9 +462,9 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
               {/* Interactive dispatch Map */}
               <LiveTripMap />
 
-              {/* Bottom operational grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2">
+              {/* Bottom operational grid — balanced: table + activity (2/3) · health (1/3) */}
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+                <div className="xl:col-span-2 space-y-6">
                   <OperationsTable
                     rows={filteredRows}
                     isLoading={isLoading}
@@ -435,10 +473,10 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
                     onDeleteRow={handleDeleteRow}
                     onCreateTripClick={() => triggerQuickAction('trip')}
                   />
-                </div>
-                <div className="space-y-6">
-                  <FleetHealth />
                   <ActivityTimeline />
+                </div>
+                <div className="xl:sticky xl:top-6">
+                  <FleetHealth />
                 </div>
               </div>
             </>
@@ -497,6 +535,14 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
         onSubmitVehicle={handleAddVehicle}
         onSubmitDriver={handleAddDriver}
         availableDrivers={driverNames}
+      />
+
+      {/* ⌘K Command Palette */}
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        onNavigate={setActiveTab}
+        onQuickAction={triggerQuickAction}
       />
 
       {/* Global Action Toast Notification Banner */}

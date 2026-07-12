@@ -85,7 +85,7 @@ const Sparkline: React.FC<{ dataPoints: number[]; color: string }> = ({ dataPoin
   const areaD = `${pathD} L ${width},${height} L 0,${height} Z`;
 
   return (
-    <svg width="100%" height={height} className="overflow-visible select-none pointer-events-none">
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" className="select-none pointer-events-none">
       <defs>
         <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -119,7 +119,7 @@ export const KpiGrid: React.FC<KpiGridProps> = ({ data, isLoading }) => {
         {Array.from({ length: 7 }).map((_, idx) => (
           <div 
             key={idx} 
-            className="p-5 bg-white border border-border-gray rounded-2xl h-[120px] flex flex-col justify-between relative overflow-hidden"
+            className="p-5 bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm h-[120px] flex flex-col justify-between relative overflow-hidden"
           >
             {/* Shimmer animation */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-100/50 to-transparent -translate-x-full animate-shimmer" 
@@ -227,7 +227,7 @@ export const KpiGrid: React.FC<KpiGridProps> = ({ data, isLoading }) => {
             key={idx}
             variants={cardVariants}
             whileHover={{ y: -5, scale: 1.015, borderColor: '#2563EB' }}
-            className="p-5 bg-white border border-border-gray rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md hover:shadow-primary/5 transition-all duration-300 relative group cursor-pointer"
+            className="p-5 bg-white border border-[#E5E7EB] rounded-[16px] flex flex-col justify-between cc-shadow-sm hover:cc-shadow-md transition-all duration-300 relative group cursor-pointer"
           >
             {/* Header row */}
             <div className="flex justify-between items-start">
@@ -241,8 +241,8 @@ export const KpiGrid: React.FC<KpiGridProps> = ({ data, isLoading }) => {
               {card.trendUp !== null && (
                 <div className={`flex items-center space-x-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
                   card.trendUp 
-                    ? 'bg-emerald-50 text-emerald-600' 
-                    : 'bg-rose-50 text-rose-600'
+                    ? 'bg-[#ECFDF5] text-[#059669]' 
+                    : 'bg-[#FEF2F2] text-[#DC2626]'
                 }`}>
                   {card.trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   <span>{card.trend}</span>
@@ -253,10 +253,10 @@ export const KpiGrid: React.FC<KpiGridProps> = ({ data, isLoading }) => {
             {/* Metric row */}
             <div className="mt-4 flex justify-between items-end">
               <div>
-                <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">
+                <h3 className="cc-display text-[26px] font-bold text-[#0A0A0A] tracking-tight leading-none tabular-nums">
                   <CountUp value={card.metric} />
                 </h3>
-                <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">
+                <p className="text-[10px] uppercase font-bold text-[#9CA3AF] mt-1.5 tracking-[0.12em]">
                   {card.title}
                 </p>
                 <span className="text-[10px] text-slate-500 block font-medium mt-0.5 leading-none">
@@ -277,17 +277,17 @@ export const KpiGrid: React.FC<KpiGridProps> = ({ data, isLoading }) => {
       <motion.div
         variants={cardVariants}
         whileHover={{ y: -5, scale: 1.015, borderColor: '#2563EB' }}
-        className="p-5 bg-white border border-border-gray rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md hover:shadow-primary/5 transition-all duration-300 relative group cursor-pointer sm:col-span-2 lg:col-span-1"
+        className="p-5 bg-white border border-[#E5E7EB] rounded-[16px] flex items-center justify-between cc-shadow-sm hover:cc-shadow-md transition-all duration-300 relative group cursor-pointer sm:col-span-2 lg:col-span-1"
       >
         <div className="space-y-1">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center shrink-0">
             <TrendingUp className="w-5 h-5" strokeWidth={2} />
           </div>
           <div className="pt-2">
-            <h3 className="text-2xl font-black text-text-dark tracking-tight leading-none">
+            <h3 className="cc-display text-[26px] font-bold text-[#0A0A0A] tracking-tight leading-none tabular-nums">
               <CountUp value={data.fleetUtilization} suffix="%" />
             </h3>
-            <p className="text-[10px] uppercase font-bold text-slate-400 mt-1 tracking-wider">
+            <p className="text-[10px] uppercase font-bold text-[#9CA3AF] mt-1.5 tracking-[0.12em]">
               Fleet Utilization
             </p>
             <span className="text-[10px] text-slate-500 block font-medium mt-0.5 leading-none">

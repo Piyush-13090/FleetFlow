@@ -22,9 +22,14 @@ import {
   Trash2,
   Eye,
   BellOff,
-  Check
+  Check,
+  Activity
 } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
+import { SectionHeader } from '../ui/SectionHeader';
+import { KpiTile } from '../ui/KpiTile';
+import { Reveal } from '../ui/Reveal';
+import { Segmented } from '../ui/Segmented';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,23 +58,12 @@ interface NotificationsCenterProps {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
-  const w = 64; const h = 20;
-  const max = Math.max(...data); const min = Math.min(...data); const range = max - min || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - 2 - ((v - min) / range) * (h - 6)}`).join(' ');
-  return (
-    <svg width={w} height={h} className="overflow-visible select-none">
-      <path d={`M ${pts}`} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-};
-
 const getPriorityBadge = (priority: Priority) => {
   const map: Record<Priority, string> = {
-    Critical: 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse',
-    High: 'bg-amber-50 text-amber-600 border-amber-200',
-    Medium: 'bg-blue-50 text-blue-600 border-blue-100',
-    Low: 'bg-slate-100 text-slate-500 border-slate-200'
+    Critical: 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2] animate-pulse',
+    High: 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]',
+    Medium: 'bg-[#EFF4FF] text-primary border-[#DBE6FF]',
+    Low: 'bg-[#F9FAFB] text-[#6B7280] border-[#E5E7EB]'
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${map[priority]}`}>
@@ -208,74 +202,80 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
   });
 
   const kpis = [
-    { label: 'Total', value: notifications.filter(n => n.status !== 'archived').length, color: '#2563EB', spark: [8, 10, 9, 12, 11, 12] },
-    { label: 'Unread', value: unreadCount, color: '#3B82F6', spark: [4, 5, 6, 7, 6, unreadCount] },
-    { label: 'Critical', value: criticalCount, color: '#EF4444', spark: [1, 2, 1, 2, 2, criticalCount] },
-    { label: 'Maintenance', value: maintCount, color: '#F59E0B', spark: [1, 2, 2, 3, 2, maintCount] },
-    { label: 'Trip Updates', value: tripCount, color: '#22C55E', spark: [3, 4, 3, 5, 4, tripCount] },
-    { label: 'Compliance', value: complianceCount, color: '#2563EB', spark: [0, 1, 0, 1, 1, complianceCount] },
+    { label: 'Total', value: notifications.filter(n => n.status !== 'archived').length, color: '#2563EB', spark: [8, 10, 9, 12, 11, 12], icon: Activity },
+    { label: 'Unread', value: unreadCount, color: '#2563EB', spark: [4, 5, 6, 7, 6, unreadCount], icon: BellOff },
+    { label: 'Critical', value: criticalCount, color: '#DC2626', spark: [1, 2, 1, 2, 2, criticalCount], icon: AlertTriangle },
+    { label: 'Maintenance', value: maintCount, color: '#D97706', spark: [1, 2, 2, 3, 2, maintCount], icon: Wrench },
+    { label: 'Trip Updates', value: tripCount, color: '#059669', spark: [3, 4, 3, 5, 4, tripCount], icon: Truck },
+    { label: 'Compliance', value: complianceCount, color: '#2563EB', spark: [0, 1, 0, 1, 1, complianceCount], icon: Shield },
   ];
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-80 bg-slate-200 rounded-2xl" />
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-80 bg-slate-100 rounded-[12px]" />
         <div className="grid grid-cols-6 gap-4">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-24 bg-slate-100 rounded-2xl" />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="h-24 bg-slate-50 rounded-[12px]" />)}
         </div>
-        <div className="h-96 bg-slate-100 rounded-2xl" />
+        <div className="h-96 bg-slate-50 rounded-[16px]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 select-none relative pb-16 text-left">
+    <Reveal className="space-y-6 select-none relative pb-16 text-left">
 
       {/* ── Sticky Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border-gray/50 bg-white/80 backdrop-blur sticky top-16 z-20">
-        <div>
-          <h1 className="text-2xl font-black text-text-dark tracking-tight leading-none">Notifications & Alerts</h1>
-          <p className="text-xs text-slate-500 font-medium mt-1.5 leading-none">
-            Stay informed with real-time operational updates, maintenance reminders, compliance alerts, and fleet activities.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          {unreadCount > 0 && (
-            <button onClick={markAllRead} className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center space-x-1.5">
-              <Check className="w-3.5 h-3.5" /><span>Mark All Read</span>
+      <SectionHeader
+        title="Notifications & Alerts"
+        subtitle="Stay informed with real-time operational updates, maintenance reminders, compliance alerts, and fleet activities."
+        actions={
+          <>
+            {unreadCount > 0 && (
+              <button 
+                onClick={markAllRead} 
+                className="px-4 py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] shadow-sm transition-all cursor-pointer flex items-center space-x-1.5"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Mark All Read</span>
+              </button>
+            )}
+            <button 
+              onClick={() => setShowPrefs(p => !p)} 
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm flex items-center space-x-1.5"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>Preferences</span>
             </button>
-          )}
-          <button onClick={() => setShowPrefs(p => !p)} className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5">
-            <Settings className="w-3.5 h-3.5" /><span>Preferences</span>
-          </button>
-          <button onClick={() => onShowToast('Exporting activity log...')} className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5">
-            <Download className="w-3.5 h-3.5" /><span>Export</span>
-          </button>
-          <button onClick={loadNotifications} className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 rounded-xl transition-all cursor-pointer">
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+            <button 
+              onClick={() => onShowToast('Exporting activity log...')} 
+              className="px-3.5 py-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] text-xs font-bold rounded-[12px] transition-all cursor-pointer cc-shadow-sm flex items-center space-x-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </button>
+            <button 
+              onClick={loadNotifications} 
+              className="p-2 border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#4B5563] hover:text-[#0A0A0A] rounded-[12px] transition-all cursor-pointer cc-shadow-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </>
+        }
+      />
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        {kpis.map((k, i) => (
-          <motion.div
+        {kpis.map((k) => (
+          <KpiTile
             key={k.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            className="p-4 bg-white border border-border-gray rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer group text-left"
-          >
-            <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider block">{k.label}</span>
-            <h3 className="text-2xl font-black tracking-tight mt-1.5" style={{ color: k.color }}>{k.value}</h3>
-            <div className="mt-3 flex justify-between items-end">
-              <span className="text-[9px] font-bold text-slate-400">alerts</span>
-              <div className="w-10 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                <Sparkline data={k.spark} color={k.color} />
-              </div>
-            </div>
-          </motion.div>
+            icon={k.icon}
+            label={k.label}
+            value={k.value}
+            color={k.color}
+            spark={k.spark}
+            tint={k.color === '#2563EB' ? '#EFF4FF' : k.color === '#059669' ? '#ECFDF5' : k.color === '#DC2626' ? '#FEF2F2' : '#FFFBEB'}
+          />
         ))}
       </div>
 
@@ -286,23 +286,28 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden"
+            className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden"
           >
-            <div className="p-4 border-b border-border-gray/50 flex items-center justify-between">
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Notification Preferences</h3>
-              <button onClick={() => setShowPrefs(false)} className="p-1 hover:bg-slate-100 rounded-lg cursor-pointer"><X className="w-4 h-4 text-slate-400" /></button>
+            <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between">
+              <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Notification Preferences</h3>
+              <button 
+                onClick={() => setShowPrefs(false)} 
+                className="p-1 hover:bg-[#F9FAFB] rounded-lg cursor-pointer"
+              >
+                <X className="w-4 h-4 text-[#9CA3AF]" />
+              </button>
             </div>
             <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
               {prefs.map(pref => (
-                <div key={pref.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-border-gray/60">
-                  <span className="text-[11px] font-semibold text-slate-700">{pref.label}</span>
+                <div key={pref.id} className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-[12px] border border-[#E5E7EB] cc-shadow-sm">
+                  <span className="text-[11px] font-semibold text-[#4B5563]">{pref.label}</span>
                   <button
                     onClick={() => togglePref(pref.id)}
                     className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer shrink-0 ml-2 ${pref.checked ? 'bg-primary' : 'bg-slate-300'}`}
                   >
                     <motion.div
                       animate={{ x: pref.checked ? 16 : 2 }}
-                      className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow"
+                      className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm"
                     />
                   </button>
                 </div>
@@ -313,72 +318,92 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
       </AnimatePresence>
 
       {/* ── Filter Bar ── */}
-      <div className="sticky top-[80px] z-10 bg-white border border-border-gray p-4 rounded-2xl flex flex-wrap items-center gap-3 shadow-sm">
-        <div className="flex items-center space-x-2 border-r border-border-gray pr-3 shrink-0">
+      <div className="sticky top-0 z-10 bg-white border border-[#E5E7EB] p-4 rounded-[16px] flex flex-wrap items-center gap-3 cc-shadow-sm">
+        <div className="flex items-center space-x-2 border-r border-[#E5E7EB] pr-3 shrink-0 text-[#0A0A0A]">
           <Filter className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-slate-800">Filters</span>
+          <span className="text-xs font-black uppercase tracking-wider">Filters</span>
         </div>
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
           <input
-            type="text" placeholder="Search notifications..."
-            value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-border-gray rounded-xl text-xs focus:bg-white focus:outline-none transition-all"
+            type="text" 
+            placeholder="Search notifications..."
+            value={search} 
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-[12px] text-xs focus:bg-white focus:outline-none transition-all font-semibold text-[#4B5563]"
           />
         </div>
-        <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
+        <select 
+          value={filterPriority} 
+          onChange={e => setFilterPriority(e.target.value)} 
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3.5 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer focus:bg-white"
+        >
           <option>All Priorities</option>
-          <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+          <option>Critical</option>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="bg-slate-50 border border-border-gray px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
+        <select 
+          value={filterStatus} 
+          onChange={e => setFilterStatus(e.target.value)} 
+          className="bg-[#F9FAFB] border border-[#E5E7EB] px-3.5 py-2 rounded-[12px] text-xs font-semibold text-[#4B5563] focus:outline-none cursor-pointer focus:bg-white"
+        >
           <option value="All">All Status</option>
           <option value="Unread">Unread Only</option>
           <option value="Read">Read</option>
         </select>
         {(search || filterPriority !== 'All Priorities' || filterStatus !== 'All') && (
-          <button onClick={() => { setSearch(''); setFilterPriority('All Priorities'); setFilterStatus('All'); }} className="px-2 py-1 text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Reset</button>
+          <button 
+            onClick={() => { setSearch(''); setFilterPriority('All Priorities'); setFilterStatus('All'); }} 
+            className="px-2 py-1 text-xs font-bold text-[#9CA3AF] hover:text-[#4B5563] cursor-pointer"
+          >
+            Reset
+          </button>
         )}
         <div className="ml-auto">
-          <span className="text-[10px] font-bold text-slate-400">{filtered.length} notifications</span>
+          <span className="text-[10px] font-bold text-[#9CA3AF]">{filtered.length} notifications</span>
         </div>
       </div>
 
       {/* ── Category Tabs ── */}
-      <div className="flex space-x-1 border-b border-border-gray/50 pb-px overflow-x-auto">
-        {CATEGORIES.map(cat => {
-          const active = activeCategory === cat;
-          const count = cat === 'all'
-            ? notifications.filter(n => n.status !== 'archived').length
-            : notifications.filter(n => n.category === cat && n.status !== 'archived').length;
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-2 border-b-2 text-[11px] font-bold transition-all cursor-pointer focus:outline-none whitespace-nowrap flex items-center space-x-1.5 ${active ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-            >
-              <span className="capitalize">{cat === 'all' ? 'All' : cat}</span>
-              {count > 0 && (
-                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${active ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
-                  {count}
+      <div className="flex justify-start overflow-x-auto pb-1 max-w-full">
+        <Segmented
+          value={activeCategory}
+          onChange={(v) => setActiveCategory(v as any)}
+          options={CATEGORIES.map(cat => {
+            const count = cat === 'all'
+              ? notifications.filter(n => n.status !== 'archived').length
+              : notifications.filter(n => n.category === cat && n.status !== 'archived').length;
+            return {
+              id: cat,
+              label: (
+                <span className="flex items-center space-x-1.5 whitespace-nowrap capitalize">
+                  <span>{cat === 'all' ? 'All' : cat}</span>
+                  {count > 0 && (
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-slate-200/50 text-[#4B5563]">
+                      {count}
+                    </span>
+                  )}
                 </span>
-              )}
-            </button>
-          );
-        })}
+              )
+            };
+          })}
+        />
       </div>
 
       {/* ── Main Content: Feed + Detail Panel ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Notification Feed */}
-        <div className={`space-y-3 ${selectedNotif ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+        <div className={`space-y-3 text-left ${selectedNotif ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
           {filtered.length === 0 ? (
-            <div className="bg-white border border-border-gray rounded-2xl p-16 text-center shadow-sm space-y-4">
-              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto">
+            <div className="bg-white border border-[#E5E7EB] rounded-[16px] p-16 text-center cc-shadow-sm space-y-4">
+              <div className="w-16 h-16 bg-[#EFF4FF] rounded-[16px] flex items-center justify-center mx-auto">
                 <BellOff className="w-8 h-8 text-primary/50" />
               </div>
-              <h3 className="text-base font-black text-slate-700">You're All Caught Up</h3>
-              <p className="text-xs text-slate-400 font-medium">No new notifications at the moment. Check back later.</p>
+              <h3 className="text-base font-black text-[#0A0A0A]">You're All Caught Up</h3>
+              <p className="text-xs text-[#6B7280] font-semibold">No new notifications at the moment. Check back later.</p>
             </div>
           ) : filtered.map((notif, idx) => {
             const Icon = notif.icon;
@@ -392,16 +417,16 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}
                 onClick={() => { setSelectedNotif(notif); void markRead(notif.id); }}
-                className={`group bg-white border rounded-2xl p-4 cursor-pointer transition-all shadow-sm hover:shadow-md ${
-                  isSelected ? 'border-primary/40 ring-1 ring-primary/20' : 'border-border-gray'
-                } ${isUnread ? 'bg-blue-50/30' : ''}`}
+                className={`group bg-white border rounded-[16px] p-4 cursor-pointer transition-all cc-shadow-sm hover:shadow-md ${
+                  isSelected ? 'border-primary/45 ring-1 ring-primary/10' : 'border-[#E5E7EB]'
+                } ${isUnread ? 'bg-[#EFF4FF]/20' : ''}`}
               >
                 <div className="flex items-start space-x-3.5">
                   {/* Icon */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                    notif.priority === 'Critical' ? 'bg-rose-50 text-rose-500' :
-                    notif.priority === 'High' ? 'bg-amber-50 text-amber-500' :
-                    'bg-blue-50 text-primary'
+                  <div className={`w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0 mt-0.5 border ${
+                    notif.priority === 'Critical' ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2]' :
+                    notif.priority === 'High' ? 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]' :
+                    'bg-[#EFF4FF] text-primary border-[#DBE6FF]'
                   }`}>
                     <Icon className="w-4.5 h-4.5" />
                   </div>
@@ -410,34 +435,37 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <h4 className={`text-[12px] leading-tight ${isUnread ? 'font-black text-text-dark' : 'font-bold text-slate-600'}`}>
+                        <h4 className={`text-[12px] leading-tight ${isUnread ? 'font-black text-[#0A0A0A]' : 'font-bold text-[#4B5563]'}`}>
                           {notif.title}
                         </h4>
                         {getPriorityBadge(notif.priority)}
                         {isUnread && <span className="w-2 h-2 bg-primary rounded-full shrink-0 animate-pulse" />}
                       </div>
-                      <span className="text-[9.5px] font-bold text-slate-400 shrink-0 whitespace-nowrap">{notif.timestamp}</span>
+                      <span className="text-[9.5px] font-bold text-[#9CA3AF] shrink-0 whitespace-nowrap">{notif.timestamp}</span>
                     </div>
 
-                    <p className="text-[10.5px] text-slate-500 font-medium mt-1 leading-relaxed line-clamp-2">
+                    <p className="text-[10.5px] text-[#6B7280] font-medium mt-1 leading-relaxed line-clamp-2">
                       {notif.description}
                     </p>
 
                     <div className="flex items-center justify-between mt-2.5">
-                      <div className="flex items-center space-x-3 text-[9.5px] font-semibold text-slate-400">
+                      <div className="flex items-center space-x-3 text-[9.5px] font-semibold text-[#9CA3AF]">
                         {notif.relatedVehicle && (
                           <span className="flex items-center space-x-1">
-                            <Truck className="w-3 h-3" /><span>{notif.relatedVehicle}</span>
+                            <Truck className="w-3 h-3" />
+                            <span>{notif.relatedVehicle}</span>
                           </span>
                         )}
                         {notif.relatedDriver && (
                           <span className="flex items-center space-x-1">
-                            <User className="w-3 h-3" /><span>{notif.relatedDriver}</span>
+                            <User className="w-3 h-3" />
+                            <span>{notif.relatedDriver}</span>
                           </span>
                         )}
                         {notif.relatedTrip && (
                           <span className="flex items-center space-x-1">
-                            <Clock className="w-3 h-3" /><span>{notif.relatedTrip}</span>
+                            <Clock className="w-3 h-3" />
+                            <span>{notif.relatedTrip}</span>
                           </span>
                         )}
                       </div>
@@ -447,7 +475,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                         {isUnread && (
                           <button
                             onClick={e => { e.stopPropagation(); void markRead(notif.id); onShowToast('Marked as read.'); }}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary cursor-pointer transition-colors"
+                            className="p-1.5 rounded-[8px] hover:bg-[#F9FAFB] text-[#9CA3AF] hover:text-primary cursor-pointer transition-colors"
                             title="Mark read"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -455,14 +483,14 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                         )}
                         <button
                           onClick={e => { e.stopPropagation(); void archiveNotif(notif.id); }}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                          className="p-1.5 rounded-[8px] hover:bg-[#F9FAFB] text-[#9CA3AF] hover:text-[#4B5563] cursor-pointer transition-colors"
                           title="Archive"
                         >
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={e => { e.stopPropagation(); void deleteNotif(notif.id); }}
-                          className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 cursor-pointer transition-colors"
+                          className="p-1.5 rounded-[8px] hover:bg-[#FEF2F2] text-[#9CA3AF] hover:text-[#DC2626] cursor-pointer transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -484,13 +512,16 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden flex flex-col text-left lg:col-span-1"
+              className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden flex flex-col text-left lg:col-span-1"
             >
               {/* Detail header */}
-              <div className="p-4 border-b border-border-gray/50 flex items-center justify-between">
-                <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider">Notification Detail</span>
-                <button onClick={() => setSelectedNotif(null)} className="p-1 hover:bg-slate-100 rounded-lg cursor-pointer">
-                  <X className="w-4 h-4 text-slate-400" />
+              <div className="p-4 border-b border-[#E5E7EB] flex items-center justify-between">
+                <span className="text-[9px] uppercase font-black text-[#9CA3AF] tracking-wider">Notification Detail</span>
+                <button 
+                  onClick={() => setSelectedNotif(null)} 
+                  className="p-1 hover:bg-[#F9FAFB] rounded-lg cursor-pointer"
+                >
+                  <X className="w-4 h-4 text-[#9CA3AF]" />
                 </button>
               </div>
 
@@ -498,28 +529,28 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                 {/* Priority & category */}
                 <div className="flex items-center space-x-2">
                   {getPriorityBadge(selectedNotif.priority)}
-                  <span className="text-[10px] font-bold text-slate-400 capitalize">{selectedNotif.category}</span>
+                  <span className="text-[10px] font-bold text-[#9CA3AF] capitalize">{selectedNotif.category}</span>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <h3 className="text-sm font-black text-text-dark leading-snug">{selectedNotif.title}</h3>
-                  <span className="text-[10px] font-bold text-slate-400 mt-1 block">{selectedNotif.timestamp}</span>
+                  <h3 className="text-sm font-black text-[#0A0A0A] leading-snug">{selectedNotif.title}</h3>
+                  <span className="text-[10px] font-bold text-[#9CA3AF] mt-1 block">{selectedNotif.timestamp}</span>
                 </div>
 
                 {/* Description */}
-                <p className="text-[11.5px] text-slate-600 font-medium leading-relaxed border-l-2 border-primary/30 pl-3 py-1 bg-blue-50/30 rounded-r-lg">
+                <p className="text-[11.5px] text-[#4B5563] font-medium leading-relaxed border-l-2 border-primary/30 pl-3 py-1 bg-[#EFF4FF]/20 rounded-r-lg">
                   {selectedNotif.description}
                 </p>
 
                 {/* Related records */}
                 {(selectedNotif.relatedVehicle || selectedNotif.relatedDriver || selectedNotif.relatedTrip) && (
-                  <div className="border border-border-gray rounded-xl p-4 space-y-2.5">
-                    <h4 className="text-[9px] uppercase font-black text-slate-400 tracking-wider">Related Records</h4>
+                  <div className="border border-[#E5E7EB] rounded-[12px] p-4 space-y-2.5 cc-shadow-sm">
+                    <h4 className="text-[9px] uppercase font-black text-[#9CA3AF] tracking-wider">Related Records</h4>
                     {selectedNotif.relatedVehicle && (
                       <div className="flex items-center justify-between text-[11px] font-semibold">
-                        <div className="flex items-center space-x-2 text-slate-500">
-                          <Truck className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center space-x-2 text-[#6B7280]">
+                          <Truck className="w-3.5 h-3.5 text-[#9CA3AF]" />
                           <span>Vehicle</span>
                         </div>
                         <span className="font-bold text-primary font-mono">{selectedNotif.relatedVehicle}</span>
@@ -527,20 +558,20 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                     )}
                     {selectedNotif.relatedDriver && (
                       <div className="flex items-center justify-between text-[11px] font-semibold">
-                        <div className="flex items-center space-x-2 text-slate-500">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center space-x-2 text-[#6B7280]">
+                          <User className="w-3.5 h-3.5 text-[#9CA3AF]" />
                           <span>Driver</span>
                         </div>
-                        <span className="font-bold text-slate-700">{selectedNotif.relatedDriver}</span>
+                        <span className="font-bold text-[#4B5563]">{selectedNotif.relatedDriver}</span>
                       </div>
                     )}
                     {selectedNotif.relatedTrip && (
                       <div className="flex items-center justify-between text-[11px] font-semibold">
-                        <div className="flex items-center space-x-2 text-slate-500">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center space-x-2 text-[#6B7280]">
+                          <Clock className="w-3.5 h-3.5 text-[#9CA3AF]" />
                           <span>Trip</span>
                         </div>
-                        <span className="font-bold text-slate-700 font-mono">{selectedNotif.relatedTrip}</span>
+                        <span className="font-bold text-[#4B5563] font-mono">{selectedNotif.relatedTrip}</span>
                       </div>
                     )}
                   </div>
@@ -548,16 +579,16 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
 
                 {/* Activity Timeline */}
                 <div>
-                  <h4 className="text-[9px] uppercase font-black text-slate-400 tracking-wider mb-3">Notification History</h4>
+                  <h4 className="text-[9px] uppercase font-black text-[#9CA3AF] tracking-wider mb-3">Notification History</h4>
                   <div className="relative pl-4 space-y-3 border-l-2 border-primary/10">
                     {[
                       { time: selectedNotif.timestamp, event: 'Alert generated by system' },
                       { time: 'Now', event: 'Viewed by Fleet Manager' }
                     ].map((ev, i) => (
                       <div key={i} className="relative">
-                        <div className="absolute -left-[21px] top-1 w-2 h-2 bg-primary border-2 border-white rounded-full" />
-                        <span className="text-[10.5px] font-bold text-slate-700 block">{ev.event}</span>
-                        <span className="text-[9px] font-bold text-slate-400 font-mono">{ev.time}</span>
+                        <div className="absolute -left-[22px] top-1 w-2.5 h-2.5 bg-primary border-2 border-white rounded-full shadow-sm" />
+                        <span className="text-[10.5px] font-bold text-[#4B5563] block">{ev.event}</span>
+                        <span className="text-[9px] font-bold text-[#9CA3AF] font-mono">{ev.time}</span>
                       </div>
                     ))}
                   </div>
@@ -565,27 +596,29 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
               </div>
 
               {/* Action footer */}
-              <div className="p-4 border-t border-border-gray/50 space-y-2">
+              <div className="p-4 border-t border-[#E5E7EB] space-y-2">
                 {selectedNotif.actionLabel && (
                   <button
                     onClick={() => onShowToast(`Opening: ${selectedNotif.actionLabel}...`)}
-                    className="w-full py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all"
+                    className="w-full py-2 bg-primary hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-[12px] cursor-pointer shadow-sm transition-all"
                   >
                     {selectedNotif.actionLabel}
                   </button>
                 )}
                 <div className="grid grid-cols-2 gap-2">
-                  <button
+                   <button
                     onClick={() => { void archiveNotif(selectedNotif.id); }}
-                    className="py-1.5 border border-border-gray bg-white text-slate-600 text-xs font-bold rounded-xl cursor-pointer hover:bg-slate-50 flex items-center justify-center space-x-1"
+                    className="py-1.5 border border-[#E5E7EB] bg-white text-[#4B5563] text-xs font-bold rounded-[12px] cursor-pointer hover:bg-[#F9FAFB] flex items-center justify-center space-x-1"
                   >
-                    <Archive className="w-3.5 h-3.5" /><span>Archive</span>
+                    <Archive className="w-3.5 h-3.5" />
+                    <span>Archive</span>
                   </button>
                   <button
                     onClick={() => { void deleteNotif(selectedNotif.id); }}
-                    className="py-1.5 border border-rose-100 bg-rose-50 text-rose-500 text-xs font-bold rounded-xl cursor-pointer hover:bg-rose-100/50 flex items-center justify-center space-x-1"
+                    className="py-1.5 border border-[#FEE2E2] bg-[#FEF2F2] text-[#DC2626] text-xs font-bold rounded-[12px] cursor-pointer hover:bg-[#FEE2E2]/60 flex items-center justify-center space-x-1"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /><span>Delete</span>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
@@ -595,10 +628,10 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
       </div>
 
       {/* ── Smart Alert Center ── */}
-      <div className="bg-white border border-border-gray rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border-gray/50">
-          <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Smart Alert Center</h3>
-          <p className="text-[10px] text-slate-400 font-medium mt-0.5">Actionable operational alerts requiring immediate attention.</p>
+      <div className="bg-white border border-[#E5E7EB] rounded-[16px] cc-shadow-sm overflow-hidden text-left">
+        <div className="p-4 border-b border-[#E5E7EB]">
+          <h3 className="text-xs font-black text-[#0A0A0A] uppercase tracking-tight">Smart Alert Center</h3>
+          <p className="text-[10px] text-[#6B7280] font-medium mt-0.5">Actionable operational alerts requiring immediate attention.</p>
         </div>
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
@@ -609,20 +642,20 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
             { title: 'Expense Approval Pending', desc: '$780 brake repair — 24h deadline', severity: 'Medium', action: 'Review Expense', color: 'blue' },
             { title: 'Trip Delayed', desc: 'TR-498 — +45 min weather delay', severity: 'High', action: 'View Trip', color: 'amber' },
           ].map((alert, i) => (
-            <div key={i} className={`p-4 border rounded-xl space-y-2.5 ${
-              alert.color === 'rose' ? 'bg-rose-50/60 border-rose-200' :
-              alert.color === 'amber' ? 'bg-amber-50/60 border-amber-200' :
-              'bg-blue-50/40 border-primary/20'
+            <div key={i} className={`p-4 border rounded-[12px] space-y-2.5 cc-shadow-sm ${
+              alert.color === 'rose' ? 'bg-[#FEF2F2]/40 border-[#FEE2E2]' :
+              alert.color === 'amber' ? 'bg-[#FFFBEB]/40 border-[#FEF3C7]' :
+              'bg-[#EFF4FF]/20 border-[#DBE6FF]'
             }`}>
               <div className="flex items-start justify-between">
-                <h4 className="text-[11px] font-black text-slate-800 leading-snug">{alert.title}</h4>
+                <h4 className="text-[11px] font-black text-[#0A0A0A] leading-snug">{alert.title}</h4>
                 <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                  alert.color === 'rose' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                  alert.color === 'amber' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                  'bg-blue-50 text-blue-600 border-blue-100'
+                  alert.color === 'rose' ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2]' :
+                  alert.color === 'amber' ? 'bg-[#FFFBEB] text-[#D97706] border-[#FEF3C7]' :
+                  'bg-[#EFF4FF] text-primary border-[#DBE6FF]'
                 }`}>{alert.severity}</span>
               </div>
-              <p className="text-[10.5px] text-slate-500 font-medium leading-relaxed">{alert.desc}</p>
+              <p className="text-[10.5px] text-[#6B7280] font-medium leading-relaxed">{alert.desc}</p>
               <button
                 onClick={() => onShowToast(`${alert.action} — navigating...`)}
                 className="text-[10px] font-black text-primary hover:underline cursor-pointer"
@@ -635,8 +668,8 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
       </div>
 
       {/* ── AI Notification Insights ── */}
-      <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-        <h3 className="text-xs font-black text-slate-800 uppercase border-b border-slate-100 pb-2 flex items-center">
+      <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4 text-left">
+        <h3 className="text-xs font-black text-[#0A0A0A] uppercase border-b border-[#F3F4F6] pb-2 flex items-center">
           <Sparkles className="w-4 h-4 text-primary mr-1.5" /> AI Notification Intelligence
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -648,15 +681,15 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
             { type: 'positive', text: 'Fleet utilization reached 74% — the highest this quarter. Operations are running at peak efficiency.' },
             { type: 'warn', text: 'Operational costs exceeded weekly average by 9%. Fuel and repair expenses are the primary contributors.' },
           ].map((ins, i) => (
-            <div key={i} className={`p-3 border rounded-xl flex items-start space-x-2 text-[10.5px] font-semibold leading-relaxed ${
-              ins.type === 'warn' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-              ins.type === 'positive' ? 'bg-emerald-50/60 border-emerald-100 text-emerald-700' :
-              'bg-blue-50/50 border-primary/20 text-slate-600'
+            <div key={i} className={`p-3 border rounded-[12px] flex items-start space-x-2 text-[10.5px] font-semibold leading-relaxed ${
+              ins.type === 'warn' ? 'bg-[#FFFBEB] border-[#FDE8B0] text-[#D97706]' :
+              ins.type === 'positive' ? 'bg-[#ECFDF5]/60 border-[#D1FAE5] text-[#059669]' :
+              'bg-[#EFF4FF] border-[#DBE6FF] text-[#4B5563]'
             }`}>
               {ins.type === 'warn'
-                ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                ? <AlertTriangle className="w-3.5 h-3.5 text-[#D97706] shrink-0 mt-0.5" />
                 : ins.type === 'positive'
-                ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                ? <CheckCircle2 className="w-3.5 h-3.5 text-[#059669] shrink-0 mt-0.5" />
                 : <Info className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
               }
               <span>{ins.text}</span>
@@ -666,8 +699,8 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
       </div>
 
       {/* ── Activity Timeline ── */}
-      <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm space-y-4">
-        <h3 className="text-xs font-black text-slate-800 uppercase border-b border-slate-100 pb-2">Fleet Activity Timeline</h3>
+      <div className="bg-white border border-[#E5E7EB] p-5 rounded-[16px] cc-shadow-sm space-y-4 text-left">
+        <h3 className="text-xs font-black text-[#0A0A0A] uppercase border-b border-[#F3F4F6] pb-2">Fleet Activity Timeline</h3>
         <div className="relative pl-5 space-y-5 border-l-2 border-primary/10 max-w-2xl">
           {[
             { time: '5m ago', event: 'Maintenance order created for TRK-201', type: 'maintenance', user: 'Fleet Manager' },
@@ -678,12 +711,12 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
             { time: '5h ago', event: 'Incident report filed — Robert Blake, I-90', type: 'safety', user: 'Safety Officer' },
             { time: '6h ago', event: 'Weekly performance report generated and emailed', type: 'report', user: 'System' },
           ].map((ev, i) => {
-            const dotColor = ev.type === 'maintenance' ? 'bg-amber-500' : ev.type === 'safety' ? 'bg-rose-500' : ev.type === 'trip' ? 'bg-emerald-500' : 'bg-primary';
+            const dotColor = ev.type === 'maintenance' ? 'bg-[#D97706]' : ev.type === 'safety' ? 'bg-[#DC2626]' : ev.type === 'trip' ? 'bg-[#059669]' : 'bg-primary';
             return (
               <div key={i} className="relative">
-                <div className={`absolute -left-[25px] top-1 w-2.5 h-2.5 ${dotColor} border-2 border-white rounded-full`} />
-                <span className="text-[11.5px] font-bold text-slate-700 block leading-snug">{ev.event}</span>
-                <div className="flex items-center space-x-2 text-[9.5px] font-semibold text-slate-400 mt-0.5">
+                <div className={`absolute -left-[26px] top-1 w-3 h-3 ${dotColor} border-2 border-white rounded-full shadow-sm`} />
+                <span className="text-[11.5px] font-bold text-[#0A0A0A] block leading-snug">{ev.event}</span>
+                <div className="flex items-center space-x-2 text-[9.5px] font-semibold text-[#9CA3AF] mt-0.5">
                   <span className="font-mono">{ev.time}</span>
                   <span>·</span>
                   <span>{ev.user}</span>
@@ -694,6 +727,6 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
         </div>
       </div>
 
-    </div>
+    </Reveal>
   );
 };
