@@ -184,7 +184,6 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
 
   // ── Analytics KPIs (static sparklines + live values where available) ──
 
-  const fuelCostVal = summary ? `$${summary.totalFuelCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
   const maintCostVal = summary ? `$${summary.totalMaintenanceCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
   const opsCostVal = summary ? `$${summary.operationalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
 

@@ -176,17 +176,11 @@ export const TopNav: React.FC<TopNavProps> = ({
           title="Open menu"
         >
           <div className="text-right hidden md:block">
-<<<<<<< HEAD
-            <div className="text-xs font-bold text-text-dark leading-none">
+            <div className="text-[12px] font-bold text-[#0A0A0A] leading-none">
               {userProfile?.name || 'Piyush Sharma'}
             </div>
-            <span className="inline-block mt-1 text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded">
-              {userProfile?.role || 'Fleet Manager'}
-=======
-            <div className="text-[12px] font-bold text-[#0A0A0A] leading-none">Piyush Sharma</div>
             <span className="inline-block mt-1 text-[9px] font-bold bg-[#EFF4FF] text-[#2563EB] border border-[#DBE6FF] px-1.5 py-0.5 rounded">
-              Fleet Manager
->>>>>>> fc83281 (Resolve merge conflicts after pull)
+              {userProfile?.role || 'Fleet Manager'}
             </span>
           </div>
           <div className="w-9 h-9 rounded-[12px] bg-[#EFF4FF] border border-[#DBE6FF] flex items-center justify-center text-[#2563EB] group-hover:scale-[1.03] transition-transform">
