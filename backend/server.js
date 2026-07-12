@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
@@ -25,12 +26,12 @@ app.use(express.json());
 
 // ─── Load Persisted State ─────────────────────────────────────────────────────
 
-loadState();
+await loadState();
 
 // ─── Public Routes ────────────────────────────────────────────────────────────
 
 app.get('/api/health', (_req, res) => {
-  res.json({ success: true, status: 'ok', timestamp: new Date().toISOString(), storage: 'json-file' });
+  res.json({ success: true, status: 'ok', timestamp: new Date().toISOString(), storage: 'postgresql' });
 });
 
 app.use('/api/auth', authRouter);

@@ -28,6 +28,7 @@ interface AccessDeniedProps {
   requiredRole?: string;
   onNavigate?: (tab: string) => void;
   onShowToast?: (msg: string) => void;
+  currentRole?: string;
 }
 
 // ─── Permission Matrix Data ────────────────────────────────────────────────────
@@ -217,7 +218,8 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
   attemptedResource = 'Financial Reports',
   requiredRole = 'Financial Analyst',
   onNavigate,
-  onShowToast
+  onShowToast,
+  currentRole
 }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [requestSent, setRequestSent] = useState(false);
@@ -273,7 +275,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
               {/* Permission Summary */}
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Current Role', val: 'Fleet Manager', color: 'text-primary bg-blue-50 border-primary/20' },
+                  { label: 'Current Role', val: currentRole || 'Fleet Manager', color: 'text-primary bg-blue-50 border-primary/20' },
                   { label: 'Attempted Resource', val: attemptedResource, color: 'text-rose-600 bg-rose-50 border-rose-200' },
                   { label: 'Required Role', val: requiredRole, color: 'text-amber-600 bg-amber-50 border-amber-200' },
                   { label: 'Access Status', val: 'Denied', color: 'text-rose-600 bg-rose-50 border-rose-200' },

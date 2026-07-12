@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -157,9 +158,29 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
   const [isLoading, setIsLoading] = useState(true);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
+  // Backend summary data
+  const [summary, setSummary] = useState<{
+    vehicles: number;
+    drivers: number;
+    trips: number;
+    activeTrips: number;
+    totalFuelCost: number;
+    totalMaintenanceCost: number;
+    totalExpenses: number;
+    operationalCost: number;
+    totalFuelQuantity: number;
+  } | null>(null);
+
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 700);
-    return () => clearTimeout(t);
+    const fetchSummary = async () => {
+      try {
+        const res = await apiFetch('/api/fleet/reports/summary');
+        if (res.ok) setSummary(await res.json());
+      } catch { /* silent */ } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSummary();
   }, []);
 
   const handleExport = (type: string) => {
@@ -167,38 +188,51 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({ onShowToast 
     onShowToast(`Generating ${type} report — download will begin shortly.`);
   };
 
-  // ── Static Analytics Data ──
+  // ── Analytics KPIs (static sparklines + live values where available) ──
+
+  const fuelCostVal = summary ? `$${summary.totalFuelCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
+  const maintCostVal = summary ? `$${summary.totalMaintenanceCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
+  const opsCostVal = summary ? `$${summary.operationalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '...';
 
   const kpis: KpiData[] = [
     { id: 'utilization', label: 'Fleet Utilization', value: '74%', change: '+11% vs last month', up: true, spark: [55, 60, 62, 68, 72, 74], color: '#2563EB', icon: Activity },
     { id: 'revenue', label: 'Total Revenue', value: '$128,400', change: '+8.2%', up: true, spark: [95000, 102000, 109000, 115000, 121000, 128400], color: '#22C55E', icon: DollarSign },
-    { id: 'ops_cost', label: 'Operational Cost', value: '$46,200', change: '-3.1%', up: true, spark: [51000, 49000, 48500, 47800, 46500, 46200], color: '#2563EB', icon: BarChart2 },
+    { id: 'ops_cost', label: 'Operational Cost', value: opsCostVal, change: '-3.1%', up: true, spark: [51000, 49000, 48500, 47800, 46500, 46200], color: '#2563EB', icon: BarChart2 },
     { id: 'fuel_eff', label: 'Fuel Efficiency', value: '7.2 mpg', change: '+4% vs fleet avg', up: true, spark: [6.4, 6.6, 6.8, 7.0, 7.1, 7.2], color: '#22C55E', icon: Fuel },
     { id: 'distance', label: 'Total Distance', value: '98,640 mi', change: '+12% vs last month', up: true, spark: [72000, 78000, 82000, 88000, 93000, 98640], color: '#3B82F6', icon: MapPin },
-    { id: 'fuel_used', label: 'Fuel Consumed', value: '13,700 L', change: '+2.4%', up: false, spark: [11200, 11800, 12400, 12900, 13300, 13700], color: '#F59E0B', icon: Fuel },
-    { id: 'maint_cost', label: 'Maintenance Cost', value: '$8,940', change: '+13% vs last qtr', up: false, spark: [6200, 7100, 7400, 8000, 8500, 8940], color: '#EF4444', icon: Shield },
+    { id: 'fuel_used', label: 'Fuel Consumed', value: summary ? `${summary.totalFuelQuantity.toLocaleString()} gal` : '...', change: '+2.4%', up: false, spark: [11200, 11800, 12400, 12900, 13300, 13700], color: '#F59E0B', icon: Fuel },
+    { id: 'maint_cost', label: 'Maintenance Cost', value: maintCostVal, change: '+13% vs last qtr', up: false, spark: [6200, 7100, 7400, 8000, 8500, 8940], color: '#EF4444', icon: Shield },
     { id: 'roi', label: 'Fleet ROI', value: '64.2%', change: '+5.8% net improvement', up: true, spark: [52, 55, 58, 60, 62, 64.2], color: '#22C55E', icon: TrendingUp },
   ];
 
-  const utilizationData = [58, 64, 70, 68, 74, 72, 74];
-  const utilizationLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  const fuelTrendData = [6.4, 6.7, 6.5, 7.0, 6.9, 7.2, 7.1];
-  const costBreakdownData = [18400, 8940, 3200, 1800, 920, 1200];
-  const costBreakdownLabels = ['Fuel', 'Maint.', 'Repairs', 'Tolls', 'Parking', 'Other'];
+  const costBreakdownData = summary
+    ? [summary.totalFuelCost, summary.totalMaintenanceCost, summary.totalExpenses, 1800, 920, 1200]
+    : [18400, 8940, 3200, 1800, 920, 1200];
+  const costBreakdownLabels = ['Fuel', 'Maint.', 'Expenses', 'Tolls', 'Parking', 'Other'];
   const costBreakdownColors = ['#2563EB', '#F59E0B', '#EF4444', '#3B82F6', '#64748B', '#94A3B8'];
 
+  const donutSegments = summary
+    ? [
+        { label: 'Fuel', value: summary.totalFuelCost, color: '#2563EB' },
+        { label: 'Maintenance', value: summary.totalMaintenanceCost, color: '#3B82F6' },
+        { label: 'Expenses', value: summary.totalExpenses, color: '#DBEAFE' },
+        { label: 'Parking', value: 920, color: '#94A3B8' },
+        { label: 'Tolls', value: 1800, color: '#64748B' },
+      ]
+    : [
+        { label: 'Fuel', value: 18400, color: '#2563EB' },
+        { label: 'Maintenance', value: 8940, color: '#3B82F6' },
+        { label: 'Repairs', value: 3200, color: '#DBEAFE' },
+        { label: 'Parking', value: 920, color: '#94A3B8' },
+        { label: 'Tolls', value: 1800, color: '#64748B' },
+      ];
+
+  const utilizationData = [58, 64, 70, 68, 74, 72, 74];
+  const utilizationLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const fuelTrendData = [6.4, 6.7, 6.5, 7.0, 6.9, 7.2, 7.1];
   const tripStatusData = [42, 8, 5, 3, 7];
   const tripStatusLabels = ['Done', 'Cancelled', 'Delayed', 'Draft', 'Active'];
   const tripStatusColors = ['#22C55E', '#EF4444', '#F59E0B', '#94A3B8', '#2563EB'];
-
-  const donutSegments = [
-    { label: 'Fuel', value: 18400, color: '#2563EB' },
-    { label: 'Maintenance', value: 8940, color: '#3B82F6' },
-    { label: 'Repairs', value: 3200, color: '#DBEAFE' },
-    { label: 'Parking', value: 920, color: '#94A3B8' },
-    { label: 'Tolls', value: 1800, color: '#64748B' },
-  ];
 
   const vehicleMatrix = [
     { reg: 'TRK-201', name: 'Freightliner Cascadia', distance: 18240, fuel: 2540, efficiency: 7.2, maintCost: 1650, opsCost: 9820, revenue: 24400, roi: 58.2, status: 'Active' },

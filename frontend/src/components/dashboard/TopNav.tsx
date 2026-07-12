@@ -18,6 +18,7 @@ interface TopNavProps {
   onOpenQuickAdd: () => void;
   onToggleNotifications: () => void;
   unreadNotifications: number;
+  userProfile?: { name: string; role: string } | null;
 }
 
 const workspaces = [
@@ -32,6 +33,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenQuickAdd,
   onToggleNotifications,
   unreadNotifications,
+  userProfile,
 }) => {
   const [time, setTime] = useState(new Date());
   const [currentWorkspace, setCurrentWorkspace] = useState(workspaces[0]);
@@ -166,9 +168,11 @@ export const TopNav: React.FC<TopNavProps> = ({
         {/* User Profile Avatar / Role Badge */}
         <div className="flex items-center space-x-3 pl-2 border-l border-border-gray">
           <div className="text-right hidden md:block">
-            <div className="text-xs font-bold text-text-dark leading-none">Piyush Sharma</div>
+            <div className="text-xs font-bold text-text-dark leading-none">
+              {userProfile?.name || 'Piyush Sharma'}
+            </div>
             <span className="inline-block mt-1 text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded">
-              Fleet Manager
+              {userProfile?.role || 'Fleet Manager'}
             </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold overflow-hidden shadow-inner">

@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-   url      = env("DATABASE_URL")
 }
 
 model activity_logs {
@@ -33,6 +32,7 @@ model alerts {
   is_read             Boolean        @default(false)
   created_at          DateTime       @default(now()) @db.Timestamptz(6)
   organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  metadata            Json?
 
   @@index([organization_id, is_read], map: "idx_alerts_org_unread")
 }
@@ -55,6 +55,7 @@ model drivers {
   organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users               users?         @relation(fields: [user_id], references: [id], onUpdate: NoAction)
   trips               trips[]
+  metadata            Json?
 
   @@index([license_expiry_date], map: "idx_drivers_license_expiry")
   @@index([region], map: "idx_drivers_region")
@@ -78,6 +79,7 @@ model expenses {
   users_expenses_created_byTousers  users?       @relation("expenses_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   trips                             trips?       @relation(fields: [trip_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vehicles                          vehicles     @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  metadata                          Json?
 
   @@index([vehicle_id], map: "idx_expenses_vehicle")
 }
@@ -95,6 +97,7 @@ model fuel_logs {
   users      users?   @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   trips      trips?   @relation(fields: [trip_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vehicles   vehicles @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  metadata   Json?
 
   @@index([log_date], map: "idx_fuel_date")
   @@index([vehicle_id], map: "idx_fuel_vehicle")
@@ -114,6 +117,7 @@ model maintenance_logs {
   created_at  DateTime           @default(now()) @db.Timestamptz(6)
   users       users?             @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   vehicles    vehicles           @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  metadata    Json?
 
   @@index([status], map: "idx_maintenance_status")
   @@index([vehicle_id], map: "idx_maintenance_vehicle")
@@ -163,6 +167,7 @@ model trips {
   drivers             drivers        @relation(fields: [driver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   vehicles            vehicles       @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  metadata            Json?
 
   @@index([created_at], map: "idx_trips_created_at")
   @@index([driver_id], map: "idx_trips_driver")
@@ -197,6 +202,7 @@ model users {
   trips                                trips[]
   user_roles                           user_roles[]
   organizations                        organizations?     @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  metadata                             Json?
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -220,6 +226,7 @@ model vehicles {
   maintenance_logs      maintenance_logs[]
   trips                 trips[]
   organizations         organizations?     @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  metadata              Json?
 
   @@index([organization_id], map: "idx_vehicles_org")
   @@index([region], map: "idx_vehicles_region")

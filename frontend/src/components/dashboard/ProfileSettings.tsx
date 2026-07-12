@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -141,16 +142,16 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Profile state
-  const [firstName, setFirstName] = useState('Alex');
-  const [lastName, setLastName] = useState('Thompson');
-  const [email, setEmail] = useState('alex.thompson@fleetflow.io');
-  const [phone, setPhone] = useState('+1 (312) 555-0192');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('Fleet Operations');
   const [designation, setDesignation] = useState('Fleet Manager');
-  const [region, setRegion] = useState('Midwest');
-  const [bio, setBio] = useState('Senior Fleet Manager with 8+ years of logistics experience across Midwest and Southeast regions.');
-  const [address, setAddress] = useState('540 W Madison St, Chicago, IL 60661');
-  const [emergencyContact, setEmergencyContact] = useState('+1 (312) 555-0844');
+  const [region, setRegion] = useState('East Coast');
+  const [bio, setBio] = useState('');
+  const [address, setAddress] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
 
   // Security state
   const [currentPwd, setCurrentPwd] = useState('');
@@ -190,8 +191,43 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
     markDirty();
   };
 
-  const handleSave = () => {
+  // Load profile from backend on mount
+  useEffect(() => {
+    apiFetch('/api/fleet/profile')
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        const [fn = '', ln = ''] = (data.name || '').split(' ');
+        setFirstName(fn);
+        setLastName(ln);
+        setEmail(data.email || '');
+        setPhone(data.phone || '');
+        setDepartment(data.department || 'Fleet Operations');
+        setDesignation(data.role || 'Fleet Manager');
+        setRegion(data.region || 'East Coast');
+        setBio(data.bio || '');
+        setAddress(data.address || '');
+        setEmergencyContact(data.emergencyContact || '');
+        if (data.notificationPreferences) {
+          setNotifToggles(prev => ({ ...prev, ...data.notificationPreferences }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
     setShowSaveModal(false);
+    try {
+      await apiFetch('/api/fleet/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`.trim(),
+          email, phone, department, role: designation, region, bio, address, emergencyContact,
+          notificationPreferences: notifToggles,
+        }),
+      });
+    } catch { /* silent */ }
     setSaveSuccess(true);
     setIsDirty(false);
     setTimeout(() => setSaveSuccess(false), 3000);

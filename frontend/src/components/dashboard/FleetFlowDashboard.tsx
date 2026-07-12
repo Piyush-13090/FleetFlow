@@ -139,6 +139,7 @@ const initialNotifications: NotificationItem[] = [
 export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [profile, setProfile] = useState<{ name: string; role: string; email: string } | null>(null);
   const [filters, setFilters] = useState({
     type: 'All Types',
     status: 'All Statuses',
@@ -193,9 +194,19 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
     }
   };
 
+  const fetchProfile = async () => {
+    try {
+      const res = await apiFetch('/api/fleet/profile');
+      if (res.ok) setProfile(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Set initial sync timestamp
   useEffect(() => {
     loadDashboardData();
+    fetchProfile();
   }, []);
 
   const updateSyncTime = () => {
@@ -360,6 +371,7 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
           onOpenQuickAdd={() => triggerQuickAction('trip')}
           onToggleNotifications={() => setIsNotificationOpen(true)}
           unreadNotifications={notifications.length}
+          userProfile={profile}
         />
 
         {/* Dynamic Page Rendering */}
@@ -454,6 +466,7 @@ export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout
               requiredRole="Admin / Financial Analyst"
               onNavigate={setActiveTab}
               onShowToast={showToast}
+              currentRole={profile?.role}
             />
           )}
         </main>

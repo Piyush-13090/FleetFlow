@@ -19,6 +19,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
   const [successStep, setSuccessStep] = useState<number | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
 
   const validate = () => {
     const tempErrors: { email?: string; password?: string } = {};
@@ -340,8 +341,59 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           </button>
         </div>
 
+        {/* Demo Accounts Panel */}
+        <div className="mt-8 pt-6 border-t border-[#E5E7EB] text-left">
+          <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Role-Based Evaluation Logins</h4>
+          <div className="space-y-2 select-text">
+            {[
+              { role: 'Admin', email: 'admin@fleetflow.io', pass: 'password123', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
+              { role: 'Fleet Manager', email: 'manager@fleetflow.io', pass: 'password123', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+              { role: 'Driver', email: 'driver@fleetflow.io', pass: 'password123', color: 'text-blue-600 bg-blue-50 border-blue-100' },
+              { role: 'Safety Officer', email: 'safety@fleetflow.io', pass: 'password123', color: 'text-amber-600 bg-amber-50 border-amber-100' },
+              { role: 'Financial Analyst', email: 'finance@fleetflow.io', pass: 'password123', color: 'text-rose-600 bg-rose-50 border-rose-100' },
+            ].map((acc, idx) => {
+              const isVisible = Boolean(visiblePasswords[idx]);
+              return (
+                <div 
+                  key={acc.role} 
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-sm transition-all duration-200 gap-2"
+                >
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <span className={`w-28 shrink-0 text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md text-center border ${acc.color}`}>
+                      {acc.role}
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-600 truncate">{acc.email}</span>
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0">
+                    <div className="flex items-center space-x-1.5 font-mono text-[11.5px] text-slate-500 bg-white sm:bg-transparent px-2 sm:px-0 py-1 sm:py-0 rounded-lg border border-slate-100 sm:border-none">
+                      <span>{isVisible ? acc.pass : '••••••••'}</span>
+                      <button
+                        type="button"
+                        onClick={() => setVisiblePasswords(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                      >
+                        {isVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail(acc.email);
+                        setPassword(acc.pass);
+                      }}
+                      className="px-2.5 py-1 bg-primary hover:bg-primary/95 text-white text-[10px] font-black rounded-lg cursor-pointer transition-colors shadow-sm hover:shadow"
+                    >
+                      Autofill
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Footer info inside the right panel */}
-        <div className="mt-8 text-center text-xs text-slate-400 font-medium">
+        <div className="mt-6 text-center text-xs text-slate-400 font-medium">
           <span>Need help? </span>
           <a
             href="#admin"

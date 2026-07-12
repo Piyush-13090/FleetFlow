@@ -1,11 +1,5 @@
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const dataDirectory = path.join(currentDirectory, '..', 'data');
-const dataFile = path.join(dataDirectory, 'fleetflow.json');
+import prisma from '../lib/prisma.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -15,6 +9,17 @@ export const createId = (prefix) => `${prefix}-${crypto.randomUUID().slice(0, 8)
 export const vehicleRegistration = (vehicle = '') => vehicle.match(/#([A-Z0-9-]+)/i)?.[1]?.toUpperCase();
 export const findVehicle = (registrationNumber) => db.vehicles.find((v) => v.registrationNumber === registrationNumber);
 export const findDriver = (name) => db.drivers.find((d) => d.name.toLowerCase() === String(name).toLowerCase());
+
+// Deterministic UUID converter to satisfy Postgres UUID primary and foreign keys
+export const toUuid = (str, prefix = '') => {
+  if (!str) return null;
+  const target = prefix ? `${prefix}-${str}` : str;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target)) {
+    return target.toLowerCase();
+  }
+  const hash = crypto.createHash('md5').update(target).digest('hex');
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+};
 
 // ─── Notification Normalization ───────────────────────────────────────────────
 
@@ -111,23 +116,23 @@ const seedProfile = {
   id: 'USR-001',
   name: 'Piyush Sharma',
   email: 'admin@fleetflow.io',
-  role: 'Fleet Manager',
+  role: 'Admin',
   department: 'Fleet Operations',
   region: 'East Coast',
   notificationPreferences: { email: true, push: true, maintenance: true, trips: true, compliance: true, expenses: false, weekly: true, daily: false },
 };
 
-// ─── In-Memory Database ───────────────────────────────────────────────────────
+// ─── In-Memory Database State ───────────────────────────────────────────────────
 
 export const db = {
-  trips: clone(seedTrips),
-  drivers: clone(seedDrivers),
-  vehicles: clone(seedVehicles),
-  maintenanceRecords: clone(seedMaintenanceRecords),
-  fuelLogs: clone(seedFuelLogs),
-  expenses: clone(seedExpenses),
-  notifications: clone(seedNotifications).map(normalizeNotification),
-  activityTimeline: clone(seedActivityTimeline),
+  trips: [],
+  drivers: [],
+  vehicles: [],
+  maintenanceRecords: [],
+  fuelLogs: [],
+  expenses: [],
+  notifications: [],
+  activityTimeline: [],
   profile: clone(seedProfile),
 };
 
@@ -147,44 +152,497 @@ export const addNotification = ({ title, description, category = 'system', prior
   ].slice(0, 200);
 };
 
-// ─── Persistence ──────────────────────────────────────────────────────────────
+// ─── Enum Mapper Helpers ───────────────────────────────────────────────────────
 
-export const persistState = () => {
-  fs.mkdirSync(dataDirectory, { recursive: true });
-  const state = {
-    trips: db.trips,
-    drivers: db.drivers,
-    vehicles: db.vehicles,
-    notifications: db.notifications,
-    activityTimeline: db.activityTimeline,
-    maintenanceRecords: db.maintenanceRecords,
-    fuelLogs: db.fuelLogs,
-    expenses: db.expenses,
-    profile: db.profile,
-  };
-  const temporaryFile = `${dataFile}.tmp`;
-  fs.writeFileSync(temporaryFile, JSON.stringify(state, null, 2));
-  fs.renameSync(temporaryFile, dataFile);
+const mapVehicleStatus = (s) => {
+  if (s === 'On Trip') return 'On_Trip';
+  if (s === 'In Shop') return 'In_Shop';
+  if (['Available', 'Retired'].includes(s)) return s;
+  return 'Available';
 };
 
-export const loadState = () => {
-  if (!fs.existsSync(dataFile)) {
-    persistState();
-    return;
+const mapDriverStatus = (s) => {
+  if (s === 'On Trip') return 'On_Trip';
+  if (s === 'Off Duty') return 'Off_Duty';
+  if (['Available', 'Suspended'].includes(s)) return s;
+  return 'Available';
+};
+
+const mapTripStatus = (s) => {
+  if (s === 'On Trip' || s === 'Delayed') return 'Dispatched';
+  if (['Draft', 'Completed', 'Cancelled'].includes(s)) return s;
+  return 'Draft';
+};
+
+const mapExpenseType = (c) => {
+  if (['Toll', 'Parking', 'Fine', 'Other'].includes(c)) return c;
+  return 'Other';
+};
+
+// ─── Persistence to PostgreSQL ──────────────────────────────────────────────────
+
+const orgId = 'de000000-0000-0000-0000-000000000000';
+
+const demoUsers = [
+  {
+    id: toUuid('USR-001'),
+    name: 'Piyush Sharma',
+    email: 'admin@fleetflow.io',
+    role: 'Admin',
+    department: 'Corporate IT',
+    region: 'East Coast'
+  },
+  {
+    id: toUuid('USR-002'),
+    name: 'Alex Thompson',
+    email: 'manager@fleetflow.io',
+    role: 'Fleet Manager',
+    department: 'Fleet Operations',
+    region: 'Midwest'
+  },
+  {
+    id: toUuid('USR-003'),
+    name: 'Robert Johnson',
+    email: 'driver@fleetflow.io',
+    role: 'Driver',
+    department: 'Logistics',
+    region: 'East Coast'
+  },
+  {
+    id: toUuid('USR-004'),
+    name: 'Marcus Brody',
+    email: 'safety@fleetflow.io',
+    role: 'Safety Officer',
+    department: 'Compliance',
+    region: 'South'
+  },
+  {
+    id: toUuid('USR-005'),
+    name: 'Sarah Jenkins',
+    email: 'finance@fleetflow.io',
+    role: 'Financial Analyst',
+    department: 'Finance',
+    region: 'East Coast'
   }
+];
+
+export const persistState = async () => {
   try {
-    const persisted = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    if (Array.isArray(persisted.trips)) db.trips = persisted.trips;
-    if (Array.isArray(persisted.drivers)) db.drivers = persisted.drivers;
-    if (Array.isArray(persisted.vehicles)) db.vehicles = persisted.vehicles;
-    if (Array.isArray(persisted.notifications)) db.notifications = persisted.notifications.map(normalizeNotification);
-    if (Array.isArray(persisted.activityTimeline)) db.activityTimeline = persisted.activityTimeline;
-    if (Array.isArray(persisted.maintenanceRecords)) db.maintenanceRecords = persisted.maintenanceRecords;
-    if (Array.isArray(persisted.fuelLogs)) db.fuelLogs = persisted.fuelLogs;
-    if (Array.isArray(persisted.expenses)) db.expenses = persisted.expenses;
-    if (persisted.profile && typeof persisted.profile === 'object') db.profile = persisted.profile;
+    // 1. Ensure Default Org Exists
+    await prisma.organizations.upsert({
+      where: { id: orgId },
+      create: { id: orgId, name: 'FleetFlow Global', region: 'Global' },
+      update: {}
+    });
+
+    // 2. Persist Profile / User & Demo Users
+    for (const u of demoUsers) {
+      const isCurrentProfile = u.email === db.profile.email;
+      const name = isCurrentProfile ? db.profile.name : u.name;
+      const metadata = isCurrentProfile ? db.profile : {
+        role: u.role,
+        department: u.department,
+        region: u.region,
+        notificationPreferences: { email: true, push: true }
+      };
+
+      await prisma.users.upsert({
+        where: { email: u.email },
+        create: {
+          id: u.id,
+          organization_id: orgId,
+          name,
+          email: u.email,
+          password_hash: '$2b$10$vbYfQ7tRuGT8xwAEEVTBqO4j7m7XDlqQGFx9QSt17ZFqcxSKyijh2', // bcrypt hash of password123
+          metadata
+        },
+        update: {
+          name,
+          metadata
+        }
+      });
+    }
+
+    // 3. Persist Vehicles
+    const vehicleIds = db.vehicles.map(v => toUuid(v.registrationNumber));
+    await prisma.vehicles.deleteMany({
+      where: {
+        id: { notIn: vehicleIds }
+      }
+    });
+    for (const v of db.vehicles) {
+      await prisma.vehicles.upsert({
+        where: { id: toUuid(v.registrationNumber) },
+        create: {
+          id: toUuid(v.registrationNumber),
+          organization_id: orgId,
+          registration_number: v.registrationNumber,
+          name_model: v.name,
+          type: v.type,
+          max_load_capacity_kg: v.capacity || 12000,
+          odometer_km: v.odometer || 0,
+          acquisition_cost: v.acquisitionCost || 50000,
+          status: mapVehicleStatus(v.status),
+          region: v.region,
+          metadata: v
+        },
+        update: {
+          name_model: v.name,
+          type: v.type,
+          max_load_capacity_kg: v.capacity || 12000,
+          odometer_km: v.odometer || 0,
+          acquisition_cost: v.acquisitionCost || 50000,
+          status: mapVehicleStatus(v.status),
+          region: v.region,
+          metadata: v
+        }
+      });
+    }
+
+    // 4. Persist Drivers
+    const driverIds = db.drivers.map(d => toUuid(d.id));
+    await prisma.drivers.deleteMany({
+      where: {
+        id: { notIn: driverIds }
+      }
+    });
+    for (const d of db.drivers) {
+      await prisma.drivers.upsert({
+        where: { id: toUuid(d.id) },
+        create: {
+          id: toUuid(d.id),
+          organization_id: orgId,
+          name: d.name,
+          license_number: d.licenseNumber,
+          license_category: d.licenseCategory || 'CDL-A',
+          license_expiry_date: new Date(d.licenseExpiry || today()),
+          contact_number: d.contactNumber || '',
+          safety_score: d.safetyScore || 100,
+          status: mapDriverStatus(d.status),
+          region: d.region,
+          metadata: d
+        },
+        update: {
+          name: d.name,
+          license_number: d.licenseNumber,
+          license_category: d.licenseCategory || 'CDL-A',
+          license_expiry_date: new Date(d.licenseExpiry || today()),
+          contact_number: d.contactNumber || '',
+          safety_score: d.safetyScore || 100,
+          status: mapDriverStatus(d.status),
+          region: d.region,
+          metadata: d
+        }
+      });
+    }
+
+    // 5. Persist Trips
+    const tripIds = db.trips.map(t => toUuid(t.id));
+    await prisma.trips.deleteMany({
+      where: {
+        id: { notIn: tripIds }
+      }
+    });
+    for (const t of db.trips) {
+      const reg = vehicleRegistration(t.vehicle);
+      const vehicleId = reg ? toUuid(reg) : null;
+      const driverObj = findDriver(t.driver);
+      const driverId = driverObj ? toUuid(driverObj.id) : null;
+
+      const [source = 'Origin', destination = 'Destination'] = t.route.split(/\s*➔\s*|\s*➔\s*/);
+
+      await prisma.trips.upsert({
+        where: { id: toUuid(t.id) },
+        create: {
+          id: toUuid(t.id),
+          organization_id: orgId,
+          source: source.trim(),
+          destination: destination.trim(),
+          vehicle_id: vehicleId,
+          driver_id: driverId,
+          cargo_weight_kg: t.cargoWeight || 0,
+          planned_distance_km: t.distance || 0,
+          status: mapTripStatus(t.status),
+          metadata: t
+        },
+        update: {
+          source: source.trim(),
+          destination: destination.trim(),
+          vehicle_id: vehicleId,
+          driver_id: driverId,
+          cargo_weight_kg: t.cargoWeight || 0,
+          planned_distance_km: t.distance || 0,
+          status: mapTripStatus(t.status),
+          metadata: t
+        }
+      });
+    }
+
+    // 6. Persist Maintenance Records
+    const maintIds = db.maintenanceRecords.map(m => toUuid(m.id));
+    await prisma.maintenance_logs.deleteMany({
+      where: {
+        id: { notIn: maintIds }
+      }
+    });
+    for (const m of db.maintenanceRecords) {
+      const mReg = m.registrationNumber || vehicleRegistration(m.vehicle);
+      await prisma.maintenance_logs.upsert({
+        where: { id: toUuid(m.id) },
+        create: {
+          id: toUuid(m.id),
+          vehicle_id: toUuid(mReg),
+          type: m.type,
+          description: m.notes || '',
+          cost: m.estimatedCost || 0,
+          status: m.status === 'Completed' ? 'Closed' : 'Open',
+          metadata: m
+        },
+        update: {
+          vehicle_id: toUuid(mReg),
+          type: m.type,
+          description: m.notes || '',
+          cost: m.estimatedCost || 0,
+          status: m.status === 'Completed' ? 'Closed' : 'Open',
+          metadata: m
+        }
+      });
+    }
+
+    // 7. Persist Fuel Logs
+    const fuelIds = db.fuelLogs.map(fl => toUuid(fl.id));
+    await prisma.fuel_logs.deleteMany({
+      where: {
+        id: { notIn: fuelIds }
+      }
+    });
+    for (const fl of db.fuelLogs) {
+      const flReg = fl.registrationNumber || vehicleRegistration(fl.vehicle);
+      await prisma.fuel_logs.upsert({
+        where: { id: toUuid(fl.id) },
+        create: {
+          id: toUuid(fl.id),
+          vehicle_id: toUuid(flReg),
+          trip_id: fl.tripId ? toUuid(fl.tripId) : null,
+          liters: fl.quantity || 0,
+          cost: fl.totalCost || 0,
+          metadata: fl
+        },
+        update: {
+          vehicle_id: toUuid(flReg),
+          trip_id: fl.tripId ? toUuid(fl.tripId) : null,
+          liters: fl.quantity || 0,
+          cost: fl.totalCost || 0,
+          metadata: fl
+        }
+      });
+    }
+
+    // 8. Persist Expenses
+    const expIds = db.expenses.map(e => toUuid(e.id));
+    await prisma.expenses.deleteMany({
+      where: {
+        id: { notIn: expIds }
+      }
+    });
+    for (const e of db.expenses) {
+      await prisma.expenses.upsert({
+        where: { id: toUuid(e.id) },
+        create: {
+          id: toUuid(e.id),
+          vehicle_id: toUuid(e.vehicle),
+          trip_id: e.tripId ? toUuid(e.tripId) : null,
+          type: mapExpenseType(e.category),
+          amount: e.amount || 0,
+          metadata: e
+        },
+        update: {
+          vehicle_id: toUuid(e.vehicle),
+          trip_id: e.tripId ? toUuid(e.tripId) : null,
+          type: mapExpenseType(e.category),
+          amount: e.amount || 0,
+          metadata: e
+        }
+      });
+    }
+
+    // 9. Persist Alerts / Notifications
+    const alertIds = db.notifications.map(n => toUuid(n.id));
+    await prisma.alerts.deleteMany({
+      where: {
+        id: { notIn: alertIds }
+      }
+    });
+    for (const n of db.notifications) {
+      await prisma.alerts.upsert({
+        where: { id: toUuid(n.id) },
+        create: {
+          id: toUuid(n.id),
+          organization_id: orgId,
+          type: n.type || 'dispatch',
+          message: n.title,
+          severity: n.critical ? 'critical' : 'info',
+          is_read: n.status === 'read',
+          metadata: n
+        },
+        update: {
+          type: n.type || 'dispatch',
+          message: n.title,
+          severity: n.critical ? 'critical' : 'info',
+          is_read: n.status === 'read',
+          metadata: n
+        }
+      });
+    }
+
+    // 10. Persist Activity Timeline Logs
+    await prisma.activity_logs.deleteMany();
+    for (const al of db.activityTimeline) {
+      await prisma.activity_logs.create({
+        data: {
+          entity_type: al.type || 'system',
+          entity_id: toUuid(al.id),
+          action: al.title,
+          metadata: al
+        }
+      });
+    }
   } catch (error) {
-    console.error('Unable to load persisted data; using seed data.', error);
-    persistState();
+    console.error('Error persisting state to PostgreSQL database:', error);
+  }
+};
+
+export const loadState = async () => {
+  try {
+    const userCount = await prisma.users.count();
+    if (userCount === 0) {
+      console.log('PostgreSQL database is empty. Initializing with default seed data...');
+      db.trips = clone(seedTrips);
+      db.drivers = clone(seedDrivers);
+      db.vehicles = clone(seedVehicles);
+      db.maintenanceRecords = clone(seedMaintenanceRecords);
+      db.fuelLogs = clone(seedFuelLogs);
+      db.expenses = clone(seedExpenses);
+      db.notifications = clone(seedNotifications).map(normalizeNotification);
+      db.activityTimeline = clone(seedActivityTimeline);
+      db.profile = clone(seedProfile);
+      await persistState();
+      return;
+    }
+
+    const users = await prisma.users.findMany();
+    const vehicles = await prisma.vehicles.findMany();
+    const drivers = await prisma.drivers.findMany();
+    const trips = await prisma.trips.findMany();
+    const maintenance = await prisma.maintenance_logs.findMany();
+    const fuelLogs = await prisma.fuel_logs.findMany();
+    const expenses = await prisma.expenses.findMany();
+    const alerts = await prisma.alerts.findMany();
+    const activityLogs = await prisma.activity_logs.findMany();
+
+    // Map profile/user
+    const adminUser = users.find(u => u.email === 'admin@fleetflow.io');
+    if (adminUser) {
+      db.profile = {
+        id: adminUser.id,
+        name: adminUser.name,
+        email: adminUser.email,
+        ...(adminUser.metadata || {})
+      };
+    } else {
+      db.profile = clone(seedProfile);
+    }
+
+    // Map vehicles
+    db.vehicles = vehicles.map(v => ({
+      registrationNumber: v.registration_number,
+      name: v.name_model,
+      type: v.type,
+      capacity: Number(v.max_load_capacity_kg),
+      odometer: Number(v.odometer_km),
+      acquisitionCost: Number(v.acquisition_cost),
+      status: v.status === 'On_Trip' ? 'On Trip' : v.status === 'In_Shop' ? 'In Shop' : v.status,
+      region: v.region,
+      ...(v.metadata || {})
+    }));
+
+    // Map drivers
+    db.drivers = drivers.map(d => ({
+      id: d.id,
+      name: d.name,
+      licenseNumber: d.license_number,
+      licenseCategory: d.license_category,
+      contactNumber: d.contact_number,
+      safetyScore: Number(d.safety_score),
+      status: d.status === 'On_Trip' ? 'On Trip' : d.status === 'Off_Duty' ? 'Off Duty' : d.status,
+      region: d.region,
+      ...(d.metadata || {})
+    }));
+
+    // Map trips
+    db.trips = trips.map(t => ({
+      id: t.id,
+      route: `${t.source} ➔ ${t.destination}`,
+      status: t.status === 'Dispatched' ? 'On Trip' : t.status,
+      cargoWeight: Number(t.cargo_weight_kg),
+      distance: Number(t.planned_distance_km),
+      ...(t.metadata || {})
+    }));
+
+    // Map maintenanceRecords
+    db.maintenanceRecords = maintenance.map(m => ({
+      id: m.id,
+      type: m.type,
+      status: m.status === 'Closed' ? 'Completed' : 'In Progress',
+      estimatedCost: Number(m.cost),
+      ...(m.metadata || {})
+    }));
+
+    // Map fuelLogs
+    db.fuelLogs = fuelLogs.map(fl => ({
+      id: fl.id,
+      quantity: Number(fl.liters),
+      totalCost: Number(fl.cost),
+      ...(fl.metadata || {})
+    }));
+
+    // Map expenses
+    db.expenses = expenses.map(e => ({
+      id: e.id,
+      amount: Number(e.amount),
+      ...(e.metadata || {})
+    }));
+
+    // Map notifications
+    db.notifications = alerts.map(a => ({
+      id: a.id,
+      title: a.message,
+      critical: a.severity === 'critical',
+      status: a.is_read ? 'read' : 'unread',
+      ...(a.metadata || {})
+    })).map(normalizeNotification);
+
+    // Map activityTimeline
+    db.activityTimeline = activityLogs.map(al => ({
+      id: String(al.id),
+      type: al.entity_type,
+      title: al.action,
+      ...(al.metadata || {})
+    }));
+
+    // Ensure all demo users exist in the database
+    await persistState();
+
+  } catch (error) {
+    console.error('Unable to load persisted data from PostgreSQL; using seed data.', error);
+    db.trips = clone(seedTrips);
+    db.drivers = clone(seedDrivers);
+    db.vehicles = clone(seedVehicles);
+    db.maintenanceRecords = clone(seedMaintenanceRecords);
+    db.fuelLogs = clone(seedFuelLogs);
+    db.expenses = clone(seedExpenses);
+    db.notifications = clone(seedNotifications).map(normalizeNotification);
+    db.activityTimeline = clone(seedActivityTimeline);
+    db.profile = clone(seedProfile);
   }
 };

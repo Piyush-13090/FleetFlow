@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Truck, 
@@ -9,82 +9,76 @@ import {
   CheckCircle,
   Clock 
 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 interface ActivityEvent {
   id: string;
-  type: 'vehicle_registered' | 'driver_added' | 'trip_started' | 'maintenance_created' | 'fuel_logged' | 'trip_completed';
+  type: string;
   title: string;
   desc: string;
   time: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  bgColor: string;
+  color?: string;
+  bgColor?: string;
 }
 
-const activityEvents: ActivityEvent[] = [
-  {
-    id: 'act-1',
-    type: 'trip_completed',
-    title: 'Trip #TR-7611 Completed',
-    desc: 'Asset #TRK-544 arrived safely at Dallas Hub',
-    time: '24 mins ago',
-    icon: CheckCircle,
-    color: '#22C55E',
-    bgColor: '#DCFCE7',
-  },
-  {
-    id: 'act-2',
-    type: 'maintenance_created',
-    title: 'Maintenance Created',
-    desc: 'Volvo VNL (#TRK-892) registered for engine diagnostics',
-    time: '1.2 hours ago',
-    icon: Wrench,
-    color: '#EF4444',
-    bgColor: '#FEE2E2',
-  },
-  {
-    id: 'act-3',
-    type: 'fuel_logged',
-    title: 'Fuel Logged',
-    desc: '120 Gallons ($410.50) added to Asset #TRK-201',
-    time: '2.5 hours ago',
-    icon: Fuel,
-    color: '#2563EB',
-    bgColor: '#DBEAFE',
-  },
-  {
-    id: 'act-4',
-    type: 'trip_started',
-    title: 'Trip #TR-8802 Dispatched',
-    desc: 'Asset #TRK-892 left Boston Hub bound for JFK New York',
-    time: '4 hours ago',
-    icon: Route,
-    color: '#2563EB',
-    bgColor: '#DBEAFE',
-  },
-  {
-    id: 'act-5',
-    type: 'driver_added',
-    title: 'Driver Assigned',
-    desc: 'Sarah Davis assigned to Freightliner Cascadia (#TRK-201)',
-    time: '6 hours ago',
-    icon: UserPlus,
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
-  },
-  {
-    id: 'act-6',
-    type: 'vehicle_registered',
-    title: 'New Asset Registered',
-    desc: 'Peterbilt 579 (Asset #TRK-544) added to MidWest Fleet',
-    time: '1 day ago',
-    icon: Truck,
-    color: '#2563EB',
-    bgColor: '#DBEAFE',
+const getIcon = (type: string) => {
+  switch (type) {
+    case 'vehicle_registered':
+    case 'vehicle_removed': return Truck;
+    case 'driver_registered':
+    case 'driver_removed':
+    case 'driver_added': return UserPlus;
+    case 'trip_started': return Route;
+    case 'maintenance_created':
+    case 'maintenance_completed': return Wrench;
+    case 'fuel_logged': return Fuel;
+    case 'trip_completed': return CheckCircle;
+    default: return Clock;
   }
-];
+};
+
+const getColors = (evt: ActivityEvent) => {
+  if (evt.color && evt.bgColor) return { color: evt.color, bgColor: evt.bgColor };
+  switch (evt.type) {
+    case 'trip_completed':
+    case 'maintenance_completed':
+      return { color: '#22C55E', bgColor: '#DCFCE7' };
+    case 'maintenance_created':
+    case 'vehicle_removed':
+    case 'driver_removed':
+      return { color: '#EF4444', bgColor: '#FEE2E2' };
+    case 'fuel_logged':
+    case 'trip_started':
+      return { color: '#2563EB', bgColor: '#DBEAFE' };
+    case 'driver_added':
+    case 'driver_registered':
+    case 'vehicle_registered':
+    default:
+      return { color: '#3B82F6', bgColor: '#EFF6FF' };
+  }
+};
 
 export const ActivityTimeline: React.FC = () => {
+  const [activities, setActivities] = useState<ActivityEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadActivities = async () => {
+    try {
+      const res = await apiFetch('/api/fleet/activity');
+      if (res.ok) {
+        setActivities(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to load activities', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
   return (
     <div className="bg-white border border-border-gray p-5 rounded-2xl shadow-sm select-none h-full flex flex-col justify-between">
       <div>
@@ -98,44 +92,55 @@ export const ActivityTimeline: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative pl-6 space-y-4 pt-1 text-left">
+        <div className="relative pl-6 space-y-4 pt-1 text-left min-h-[150px]">
           {/* Vertical blue connector line */}
           <div className="absolute top-2 left-2.5 w-0.5 bottom-6 bg-slate-100 border-l-2 border-primary/20 border-dotted" />
 
-          {activityEvents.map((evt, idx) => {
-            const Icon = evt.icon;
-            return (
-              <motion.div 
-                key={evt.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
-                className="relative flex items-start space-x-3 group"
-              >
-                {/* Node icon circle */}
-                <div 
-                  className="absolute -left-6.5 top-0.5 w-5 h-5 rounded-full flex items-center justify-center border border-white shadow-sm transition-all duration-300 group-hover:scale-110 z-10"
-                  style={{ backgroundColor: evt.bgColor, color: evt.color }}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-10 text-xs font-semibold text-slate-400">
+              Syncing activities...
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="flex items-center justify-center py-10 text-xs font-semibold text-slate-400">
+              No recent activity.
+            </div>
+          ) : (
+            activities.slice(0, 6).map((evt, idx) => {
+              const Icon = getIcon(evt.type);
+              const { color, bgColor } = getColors(evt);
+              return (
+                <motion.div 
+                  key={evt.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: idx * 0.05 }}
+                  className="relative flex items-start space-x-3 group"
                 >
-                  <Icon className="w-3 h-3" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline gap-2">
-                    <span className="text-[11px] font-bold text-text-dark group-hover:text-primary transition-colors leading-tight">
-                      {evt.title}
-                    </span>
-                    <span className="text-[9px] text-slate-400 font-semibold font-mono shrink-0">
-                      {evt.time}
-                    </span>
+                  {/* Node icon circle */}
+                  <div 
+                    className="absolute -left-6.5 top-0.5 w-5 h-5 rounded-full flex items-center justify-center border border-white shadow-sm transition-all duration-300 group-hover:scale-110 z-10"
+                    style={{ backgroundColor: bgColor, color: color }}
+                  >
+                    <Icon className="w-3 h-3" />
                   </div>
-                  <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                    {evt.desc}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="text-[11px] font-bold text-text-dark group-hover:text-primary transition-colors leading-tight">
+                        {evt.title}
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-semibold font-mono shrink-0">
+                        {evt.time}
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      {evt.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </div>
       </div>
 
