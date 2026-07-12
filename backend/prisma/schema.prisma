@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+   url      = env("DATABASE_URL")
+}
+
+model activity_logs {
+  id           BigInt   @id @default(autoincrement())
+  entity_type  String   @db.VarChar(30)
+  entity_id    String   @db.Uuid
+  action       String   @db.VarChar(100)
+  performed_by String?  @db.Uuid
+  metadata     Json?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  users        users?   @relation(fields: [performed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_activity_created")
+  @@index([entity_type, entity_id], map: "idx_activity_entity")
+}
+
+model alerts {
+  id                  String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization_id     String?        @db.Uuid
+  type                String         @db.VarChar(50)
+  related_entity_type String?        @db.VarChar(30)
+  related_entity_id   String?        @db.Uuid
+  message             String
+  severity            String         @default("info") @db.VarChar(20)
+  is_read             Boolean        @default(false)
+  created_at          DateTime       @default(now()) @db.Timestamptz(6)
+  organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([organization_id, is_read], map: "idx_alerts_org_unread")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model drivers {
+  id                  String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization_id     String?        @db.Uuid
+  user_id             String?        @db.Uuid
+  name                String         @db.VarChar(150)
+  license_number      String         @unique @db.VarChar(50)
+  license_category    String         @db.VarChar(20)
+  license_expiry_date DateTime       @db.Date
+  contact_number      String         @db.VarChar(20)
+  safety_score        Decimal        @default(100) @db.Decimal(5, 2)
+  status              driver_status  @default(Available)
+  region              String?        @db.VarChar(100)
+  created_at          DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime       @default(now()) @db.Timestamptz(6)
+  organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users               users?         @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+  trips               trips[]
+
+  @@index([license_expiry_date], map: "idx_drivers_license_expiry")
+  @@index([region], map: "idx_drivers_region")
+  @@index([status], map: "idx_drivers_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model expenses {
+  id                                String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  vehicle_id                        String       @db.Uuid
+  trip_id                           String?      @db.Uuid
+  type                              expense_type @default(Other)
+  amount                            Decimal      @db.Decimal(12, 2)
+  expense_date                      DateTime     @default(dbgenerated("CURRENT_DATE")) @db.Date
+  requires_approval                 Boolean      @default(false)
+  approved_by                       String?      @db.Uuid
+  approved_at                       DateTime?    @db.Timestamptz(6)
+  created_by                        String?      @db.Uuid
+  created_at                        DateTime     @default(now()) @db.Timestamptz(6)
+  users_expenses_approved_byTousers users?       @relation("expenses_approved_byTousers", fields: [approved_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_expenses_created_byTousers  users?       @relation("expenses_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trips                             trips?       @relation(fields: [trip_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vehicles                          vehicles     @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([vehicle_id], map: "idx_expenses_vehicle")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model fuel_logs {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  vehicle_id String   @db.Uuid
+  trip_id    String?  @db.Uuid
+  liters     Decimal  @db.Decimal(10, 2)
+  cost       Decimal  @db.Decimal(12, 2)
+  log_date   DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  created_by String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users?   @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trips      trips?   @relation(fields: [trip_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vehicles   vehicles @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([log_date], map: "idx_fuel_date")
+  @@index([vehicle_id], map: "idx_fuel_vehicle")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model maintenance_logs {
+  id          String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  vehicle_id  String             @db.Uuid
+  type        String             @db.VarChar(100)
+  description String?
+  cost        Decimal            @default(0) @db.Decimal(12, 2)
+  status      maintenance_status @default(Open)
+  started_at  DateTime           @default(now()) @db.Timestamptz(6)
+  closed_at   DateTime?          @db.Timestamptz(6)
+  created_by  String?            @db.Uuid
+  created_at  DateTime           @default(now()) @db.Timestamptz(6)
+  users       users?             @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vehicles    vehicles           @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([status], map: "idx_maintenance_status")
+  @@index([vehicle_id], map: "idx_maintenance_vehicle")
+}
+
+model organizations {
+  id         String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name       String     @db.VarChar(150)
+  region     String?    @db.VarChar(100)
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  alerts     alerts[]
+  drivers    drivers[]
+  trips      trips[]
+  users      users[]
+  vehicles   vehicles[]
+}
+
+model roles {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique @db.VarChar(50)
+  user_roles user_roles[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model trips {
+  id                  String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization_id     String?        @db.Uuid
+  source              String         @db.VarChar(150)
+  destination         String         @db.VarChar(150)
+  vehicle_id          String         @db.Uuid
+  driver_id           String         @db.Uuid
+  cargo_weight_kg     Decimal        @db.Decimal(10, 2)
+  planned_distance_km Decimal        @db.Decimal(10, 2)
+  actual_distance_km  Decimal?       @db.Decimal(10, 2)
+  fuel_consumed_l     Decimal?       @db.Decimal(10, 2)
+  revenue             Decimal?       @default(0) @db.Decimal(14, 2)
+  status              trip_status    @default(Draft)
+  created_by          String?        @db.Uuid
+  dispatched_at       DateTime?      @db.Timestamptz(6)
+  completed_at        DateTime?      @db.Timestamptz(6)
+  cancelled_at        DateTime?      @db.Timestamptz(6)
+  created_at          DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime       @default(now()) @db.Timestamptz(6)
+  expenses            expenses[]
+  fuel_logs           fuel_logs[]
+  users               users?         @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  drivers             drivers        @relation(fields: [driver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations       organizations? @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  vehicles            vehicles       @relation(fields: [vehicle_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_trips_created_at")
+  @@index([driver_id], map: "idx_trips_driver")
+  @@index([status], map: "idx_trips_status")
+  @@index([vehicle_id], map: "idx_trips_vehicle")
+}
+
+model user_roles {
+  user_id String @db.Uuid
+  role_id Int
+  roles   roles  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users   users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, role_id])
+}
+
+model users {
+  id                                   String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization_id                      String?            @db.Uuid
+  name                                 String             @db.VarChar(150)
+  email                                String             @unique @db.VarChar(150)
+  password_hash                        String
+  is_active                            Boolean            @default(true)
+  created_at                           DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime           @default(now()) @db.Timestamptz(6)
+  activity_logs                        activity_logs[]
+  drivers                              drivers[]
+  expenses_expenses_approved_byTousers expenses[]         @relation("expenses_approved_byTousers")
+  expenses_expenses_created_byTousers  expenses[]         @relation("expenses_created_byTousers")
+  fuel_logs                            fuel_logs[]
+  maintenance_logs                     maintenance_logs[]
+  trips                                trips[]
+  user_roles                           user_roles[]
+  organizations                        organizations?     @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model vehicles {
+  id                    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization_id       String?            @db.Uuid
+  registration_number   String             @unique @db.VarChar(30)
+  name_model            String             @db.VarChar(150)
+  type                  String             @db.VarChar(50)
+  max_load_capacity_kg  Decimal            @db.Decimal(10, 2)
+  odometer_km           Decimal            @default(0) @db.Decimal(12, 2)
+  acquisition_cost      Decimal            @db.Decimal(14, 2)
+  status                vehicle_status     @default(Available)
+  region                String?            @db.VarChar(100)
+  next_service_due_km   Decimal?           @db.Decimal(12, 2)
+  next_service_due_date DateTime?          @db.Date
+  created_at            DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime           @default(now()) @db.Timestamptz(6)
+  expenses              expenses[]
+  fuel_logs             fuel_logs[]
+  maintenance_logs      maintenance_logs[]
+  trips                 trips[]
+  organizations         organizations?     @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([organization_id], map: "idx_vehicles_org")
+  @@index([region], map: "idx_vehicles_region")
+  @@index([status], map: "idx_vehicles_status")
+}
+
+enum driver_status {
+  Available
+  On_Trip   @map("On Trip")
+  Off_Duty  @map("Off Duty")
+  Suspended
+}
+
+enum expense_type {
+  Toll
+  Parking
+  Fine
+  Other
+}
+
+enum maintenance_status {
+  Open
+  Closed
+}
+
+enum trip_status {
+  Draft
+  Dispatched
+  Completed
+  Cancelled
+}
+
+enum vehicle_status {
+  Available
+  On_Trip   @map("On Trip")
+  In_Shop   @map("In Shop")
+  Retired
+}
