@@ -11,8 +11,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2"
+<<<<<<< HEAD
   },
   "devDependencies": {
     "prisma": "^6.19.3"
+=======
+>>>>>>> 2c857712a7678335a1267d32b3d436e0640956ef
   }
 }
