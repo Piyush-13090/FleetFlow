@@ -65,6 +65,7 @@ const seedTrips = [
   { id: 'TR-4029', vehicle: 'Ford Transit Cargo (#TRK-109)', vehicleType: 'Delivery Van', driver: 'Jane Smith', route: 'LAX-Hub ➔ SFO-Terminal', status: 'Available', cargo: 'E-commerce Parcels', eta: 'Ready', health: 100, region: 'West Coast' },
   { id: 'TR-3392', vehicle: 'Volvo VNL 860 (#TRK-704)', vehicleType: 'Semi-Truck', driver: 'Michael Miller', route: 'MIA-Depot ➔ ATL-Hub', status: 'In Shop', cargo: 'N/A (Shop Repair)', eta: 'In Service', health: 54, region: 'South' },
   { id: 'TR-5052', vehicle: 'Chevrolet Express (#TRK-112)', vehicleType: 'Delivery Van', driver: 'David Wilson', route: 'SEA-Hub ➔ PDX-Depot', status: 'Completed', cargo: 'Perishable Produce', eta: 'Completed', health: 99, region: 'West Coast' },
+  { id: 'TR-1001', vehicle: 'Ford Transit (#Van-05)', vehicleType: 'Delivery Van', driver: 'Alex', route: 'BOS-Hub ➔ JFK-NY', status: 'Completed', cargo: 'E-commerce Parcels', eta: 'Completed', health: 95, region: 'East Coast', cargoWeight: 450, distance: 200 }
 ];
 
 const seedDrivers = [
@@ -74,6 +75,7 @@ const seedDrivers = [
   { id: 'DRV-104', name: 'Jane Smith', licenseNumber: 'CDL-NY99810', licenseCategory: 'CDL-B', contactNumber: '+1 (212) 555-0104', safetyScore: 100, status: 'Available', currentVehicle: 'Ford Transit Cargo (#TRK-109)', licenseExpiry: '2027-09-12', daysToExpiry: 420, lastTrip: 'LAX-Hub ➔ SNA-Terminal', experience: 4, totalTrips: 76, avgDistance: 110, avgFuelEfficiency: 14.5, emergencyContact: 'Thomas Smith (Spouse) - +1 (212) 555-0105', region: 'West Coast', compliance: { license: 'Valid', medical: 'Valid', background: 'Cleared', training: 'Completed' }, incidents: 0, timeline: [{ date: '2026-07-05', event: 'Trip completed safely' }] },
   { id: 'DRV-105', name: 'Michael Miller', licenseNumber: 'CDL-GA88210', licenseCategory: 'CDL-A', contactNumber: '+1 (404) 555-0105', safetyScore: 65, status: 'Off Duty', currentVehicle: 'N/A', licenseExpiry: '2026-11-20', daysToExpiry: 131, lastTrip: 'MIA-Depot ➔ ATL-Hub', experience: 3, totalTrips: 45, avgDistance: 290, avgFuelEfficiency: 6.8, emergencyContact: 'Alice Miller (Wife) - +1 (404) 555-0106', region: 'South', compliance: { license: 'Valid', medical: 'Valid', background: 'Cleared', training: 'Pending Refresher' }, incidents: 3, timeline: [{ date: '2026-07-08', event: 'Speeding alert flagged during route' }] },
   { id: 'DRV-106', name: 'David Wilson', licenseNumber: 'CDL-FL70921', licenseCategory: 'CDL-A', contactNumber: '+1 (305) 555-0106', safetyScore: 78, status: 'Suspended', currentVehicle: 'N/A', licenseExpiry: '2026-06-01', daysToExpiry: -41, lastTrip: 'SEA-Hub ➔ PDX-Depot', experience: 7, totalTrips: 112, avgDistance: 270, avgFuelEfficiency: 6.9, emergencyContact: 'Carol Wilson (Wife) - +1 (305) 555-0107', region: 'West Coast', compliance: { license: 'Expired', medical: 'Valid', background: 'Cleared', training: 'Completed' }, incidents: 2, timeline: [{ date: '2026-06-01', event: 'Safety suspension order issued' }] },
+  { id: 'DRV-107', name: 'Alex', licenseNumber: 'CDL-NY10005', licenseCategory: 'CDL-B', contactNumber: '+1 (212) 555-0107', safetyScore: 95, status: 'Available', currentVehicle: 'Ford Transit (#Van-05)', licenseExpiry: '2028-07-12', daysToExpiry: 730, lastTrip: 'BOS-Hub ➔ JFK-NY', experience: 5, totalTrips: 50, avgDistance: 120, avgFuelEfficiency: 30.0, emergencyContact: 'Sarah (Wife) - +1 (212) 555-0108', region: 'East Coast', compliance: { license: 'Valid', medical: 'Valid', background: 'Cleared', training: 'Completed' }, incidents: 0, timeline: [{ date: '2026-07-12', event: 'Trip Completed' }] }
 ];
 
 const seedVehicles = [
@@ -83,21 +85,25 @@ const seedVehicles = [
   { registrationNumber: 'TRK-109', name: 'Ford Transit Cargo', type: 'Delivery Van', capacity: 4500, odometer: 42100, acquisitionCost: 45000, status: 'Available', lastMaintenance: '2026-04-18', assignedDriver: 'Jane Smith', health: 100, region: 'West Coast', purchaseDate: '2025-01-20', insuranceExpiry: '2027-01-20', roadTax: 'Compliant', documents: ['Insurance', 'Registration'], specs: { engine: '3.5L EcoBoost V6', fuelType: 'Gasoline', mpg: 14.5, fuelCapacity: 25 }, tripsHistory: [{ id: 'TR-3011', route: 'LAX ➔ SNA', date: '2026-07-05', status: 'Completed' }], fuelConsumption: [{ date: '2026-07-04', gallons: 20, cost: 75.00 }], maintenanceHistory: [{ date: '2026-04-18', issue: 'Scheduled Tire Rotation', cost: 95.00, shop: 'Los Angeles Terminal Shop' }], timeline: [{ date: '2026-04-18', event: 'Scheduled tire service completed' }] },
   { registrationNumber: 'TRK-704', name: 'Volvo VNL 860', type: 'Semi-Truck', capacity: 45000, odometer: 189400, acquisitionCost: 135000, status: 'In Shop', lastMaintenance: '2026-07-12', assignedDriver: 'N/A', health: 54, region: 'South', purchaseDate: '2024-03-12', insuranceExpiry: '2026-11-20', roadTax: 'Compliant', documents: ['Insurance', 'Registration'], specs: { engine: 'Volvo D13 455HP', fuelType: 'Diesel', mpg: 6.8, fuelCapacity: 150 }, tripsHistory: [], fuelConsumption: [], maintenanceHistory: [{ date: '2026-07-12', issue: 'Engine Misfire Check (Ongoing)', cost: 1400.00, shop: 'Atlanta Service Center' }], timeline: [{ date: '2026-07-12', event: 'Scheduled shop check-in' }] },
   { registrationNumber: 'TRK-112', name: 'Chevrolet Express', type: 'Delivery Van', capacity: 4000, odometer: 64100, acquisitionCost: 38000, status: 'Retired', lastMaintenance: '2026-01-10', assignedDriver: 'N/A', health: 72, region: 'West Coast', purchaseDate: '2021-05-10', insuranceExpiry: '2026-05-10', roadTax: 'Expired', documents: [], specs: { engine: '4.3L V6', fuelType: 'Gasoline', mpg: 13.0, fuelCapacity: 31 }, tripsHistory: [], fuelConsumption: [], maintenanceHistory: [], timeline: [{ date: '2026-06-01', event: 'Decommissioned from active service' }] },
+  { registrationNumber: 'Van-05', name: 'Ford Transit', type: 'Delivery Van', capacity: 500, odometer: 10000, acquisitionCost: 25000, status: 'In Shop', lastMaintenance: '2026-07-12', assignedDriver: 'Alex', health: 95, region: 'East Coast', purchaseDate: '2025-06-01', insuranceExpiry: '2027-06-01', roadTax: 'Compliant', documents: ['Insurance', 'Registration'], specs: { engine: '2.0L EcoBlue', fuelType: 'Diesel', mpg: 30.0, fuelCapacity: 80 }, tripsHistory: [{ id: 'TR-1001', route: 'BOS ➔ JFK', date: '2026-07-12', status: 'Completed' }], fuelConsumption: [{ date: '2026-07-12', gallons: 15, cost: 52.5 }], maintenanceHistory: [{ date: '2026-07-12', issue: 'Oil Change', cost: 120.00, shop: 'Boston Hub Shop' }], timeline: [{ date: '2026-07-12', event: 'Oil Change logged' }] }
 ];
 
 const seedMaintenanceRecords = [
   { id: 'MA-908', vehicle: 'Freightliner Cascadia (#TRK-201)', registrationNumber: 'TRK-201', type: 'Brake Service', workshop: 'Midwest Fleet Garage', mechanic: 'Tom Miller', scheduledDate: '2026-07-11', estimatedCost: 850, status: 'In Progress', priority: 'High', notes: 'Front brake pads require immediate replacement.', partsUsed: [{ name: 'Ceramic Brake Pads (Set)', qty: 2, cost: 280 }, { name: 'Fluid Refill', qty: 1, cost: 45 }] },
   { id: 'MA-907', vehicle: 'Ford Transit Cargo (#TRK-109)', registrationNumber: 'TRK-109', type: 'Oil Change', workshop: 'Chicago Rapid Lube', mechanic: 'Sarah Jenkins', scheduledDate: '2026-07-10', estimatedCost: 120, status: 'Completed', priority: 'Low', notes: 'Standard synthetic oil change.', partsUsed: [{ name: 'Synthetic Oil (5W-30)', qty: 6, cost: 72 }, { name: 'Premium Oil Filter', qty: 1, cost: 18 }] },
+  { id: 'MA-909', vehicle: 'Ford Transit (#Van-05)', registrationNumber: 'Van-05', type: 'Oil Change', workshop: 'Boston Hub Shop', mechanic: 'Sarah Jenkins', scheduledDate: '2026-07-12', estimatedCost: 120, status: 'In Progress', priority: 'Medium', notes: 'Oil Change service.', partsUsed: [{ name: 'Engine Oil', qty: 1, cost: 50 }] }
 ];
 
 const seedFuelLogs = [
   { id: 'FL-001', vehicle: 'Freightliner Cascadia', registrationNumber: 'TRK-201', driver: 'Sarah Davis', tripId: 'TR-9114', station: "Love's Travel Stop #102", fuelType: 'Diesel', quantity: 85, pricePerLiter: 3.58, totalCost: 304.3, odometer: 142200, date: '2026-07-11', notes: '' },
   { id: 'FL-002', vehicle: 'Volvo VNL 860', registrationNumber: 'TRK-892', driver: 'Robert Johnson', tripId: 'TR-8802', station: 'Pilot Flying J Boston', fuelType: 'Diesel', quantity: 110, pricePerLiter: 3.5, totalCost: 385, odometer: 142300, date: '2026-07-10', notes: '' },
+  { id: 'FL-003', vehicle: 'Ford Transit', registrationNumber: 'Van-05', driver: 'Alex', tripId: 'TR-1001', station: 'Pilot Flying J Boston', fuelType: 'Diesel', quantity: 15, pricePerLiter: 3.5, totalCost: 52.5, odometer: 10200, date: '2026-07-12', notes: 'Fuel fill after trip completion' }
 ];
 
 const seedExpenses = [
   { id: 'EX-001', vehicle: 'TRK-201', tripId: 'TR-9114', category: 'Toll', amount: 45, date: '2026-07-11', recordedBy: 'Sarah Davis', status: 'Approved', notes: 'Midwest turnpike pass' },
   { id: 'EX-002', vehicle: 'TRK-109', tripId: 'TR-4029', category: 'Parking', amount: 22, date: '2026-07-10', recordedBy: 'Jane Smith', status: 'Pending', notes: 'Overnight dock parking' },
+  { id: 'EX-003', vehicle: 'Van-05', tripId: 'TR-1001', category: 'Other', amount: 120, date: '2026-07-12', recordedBy: 'Alex', status: 'Approved', notes: 'Oil Change cost' }
 ];
 
 const seedNotifications = [
@@ -228,285 +234,293 @@ const demoUsers = [
 
 export const persistState = async () => {
   try {
-    // 1. Ensure Default Org Exists
-    await prisma.organizations.upsert({
-      where: { id: orgId },
-      create: { id: orgId, name: 'FleetFlow Global', region: 'Global' },
-      update: {}
-    });
+    await prisma.$transaction(async (tx) => {
+      // Temporarily disable triggers
+      await tx.$executeRawUnsafe("SET session_replication_role = 'replica';");
 
-    // 2. Persist Profile / User & Demo Users
-    for (const u of demoUsers) {
-      const isCurrentProfile = u.email === db.profile.email;
-      const name = isCurrentProfile ? db.profile.name : u.name;
-      const metadata = isCurrentProfile ? db.profile : {
-        role: u.role,
-        department: u.department,
-        region: u.region,
-        notificationPreferences: { email: true, push: true }
-      };
-
-      await prisma.users.upsert({
-        where: { email: u.email },
-        create: {
-          id: u.id,
-          organization_id: orgId,
-          name,
-          email: u.email,
-          password_hash: '$2b$10$vbYfQ7tRuGT8xwAEEVTBqO4j7m7XDlqQGFx9QSt17ZFqcxSKyijh2', // bcrypt hash of password123
-          metadata
-        },
-        update: {
-          name,
-          metadata
-        }
+      // 1. Ensure Default Org Exists
+      await tx.organizations.upsert({
+        where: { id: orgId },
+        create: { id: orgId, name: 'FleetFlow Global', region: 'Global' },
+        update: {}
       });
-    }
 
-    // 3. Persist Vehicles
-    const vehicleIds = db.vehicles.map(v => toUuid(v.registrationNumber));
-    await prisma.vehicles.deleteMany({
-      where: {
-        id: { notIn: vehicleIds }
+      // 2. Persist Profile / User & Demo Users
+      for (const u of demoUsers) {
+        const isCurrentProfile = u.email === db.profile.email;
+        const name = isCurrentProfile ? db.profile.name : u.name;
+        const metadata = isCurrentProfile ? db.profile : {
+          role: u.role,
+          department: u.department,
+          region: u.region,
+          notificationPreferences: { email: true, push: true }
+        };
+
+        await tx.users.upsert({
+          where: { email: u.email },
+          create: {
+            id: u.id,
+            organization_id: orgId,
+            name,
+            email: u.email,
+            password_hash: '$2b$10$vbYfQ7tRuGT8xwAEEVTBqO4j7m7XDlqQGFx9QSt17ZFqcxSKyijh2', // bcrypt hash of password123
+            metadata
+          },
+          update: {
+            name,
+            metadata
+          }
+        });
       }
-    });
-    for (const v of db.vehicles) {
-      await prisma.vehicles.upsert({
-        where: { id: toUuid(v.registrationNumber) },
-        create: {
-          id: toUuid(v.registrationNumber),
-          organization_id: orgId,
-          registration_number: v.registrationNumber,
-          name_model: v.name,
-          type: v.type,
-          max_load_capacity_kg: v.capacity || 12000,
-          odometer_km: v.odometer || 0,
-          acquisition_cost: v.acquisitionCost || 50000,
-          status: mapVehicleStatus(v.status),
-          region: v.region,
-          metadata: v
-        },
-        update: {
-          name_model: v.name,
-          type: v.type,
-          max_load_capacity_kg: v.capacity || 12000,
-          odometer_km: v.odometer || 0,
-          acquisition_cost: v.acquisitionCost || 50000,
-          status: mapVehicleStatus(v.status),
-          region: v.region,
-          metadata: v
+
+      // 3. Persist Vehicles
+      const vehicleIds = db.vehicles.map(v => toUuid(v.registrationNumber));
+      await tx.vehicles.deleteMany({
+        where: {
+          id: { notIn: vehicleIds }
         }
       });
-    }
-
-    // 4. Persist Drivers
-    const driverIds = db.drivers.map(d => toUuid(d.id));
-    await prisma.drivers.deleteMany({
-      where: {
-        id: { notIn: driverIds }
+      for (const v of db.vehicles) {
+        await tx.vehicles.upsert({
+          where: { id: toUuid(v.registrationNumber) },
+          create: {
+            id: toUuid(v.registrationNumber),
+            organization_id: orgId,
+            registration_number: v.registrationNumber,
+            name_model: v.name,
+            type: v.type,
+            max_load_capacity_kg: v.capacity || 12000,
+            odometer_km: v.odometer || 0,
+            acquisition_cost: v.acquisitionCost || 50000,
+            status: mapVehicleStatus(v.status),
+            region: v.region,
+            metadata: v
+          },
+          update: {
+            name_model: v.name,
+            type: v.type,
+            max_load_capacity_kg: v.capacity || 12000,
+            odometer_km: v.odometer || 0,
+            acquisition_cost: v.acquisitionCost || 50000,
+            status: mapVehicleStatus(v.status),
+            region: v.region,
+            metadata: v
+          }
+        });
       }
-    });
-    for (const d of db.drivers) {
-      await prisma.drivers.upsert({
-        where: { id: toUuid(d.id) },
-        create: {
-          id: toUuid(d.id),
-          organization_id: orgId,
-          name: d.name,
-          license_number: d.licenseNumber,
-          license_category: d.licenseCategory || 'CDL-A',
-          license_expiry_date: new Date(d.licenseExpiry || today()),
-          contact_number: d.contactNumber || '',
-          safety_score: d.safetyScore || 100,
-          status: mapDriverStatus(d.status),
-          region: d.region,
-          metadata: d
-        },
-        update: {
-          name: d.name,
-          license_number: d.licenseNumber,
-          license_category: d.licenseCategory || 'CDL-A',
-          license_expiry_date: new Date(d.licenseExpiry || today()),
-          contact_number: d.contactNumber || '',
-          safety_score: d.safetyScore || 100,
-          status: mapDriverStatus(d.status),
-          region: d.region,
-          metadata: d
+
+      // 4. Persist Drivers
+      const driverIds = db.drivers.map(d => toUuid(d.id));
+      await tx.drivers.deleteMany({
+        where: {
+          id: { notIn: driverIds }
         }
       });
-    }
-
-    // 5. Persist Trips
-    const tripIds = db.trips.map(t => toUuid(t.id));
-    await prisma.trips.deleteMany({
-      where: {
-        id: { notIn: tripIds }
+      for (const d of db.drivers) {
+        await tx.drivers.upsert({
+          where: { id: toUuid(d.id) },
+          create: {
+            id: toUuid(d.id),
+            organization_id: orgId,
+            name: d.name,
+            license_number: d.licenseNumber,
+            license_category: d.licenseCategory || 'CDL-A',
+            license_expiry_date: new Date(d.licenseExpiry || today()),
+            contact_number: d.contactNumber || '',
+            safety_score: d.safetyScore || 100,
+            status: mapDriverStatus(d.status),
+            region: d.region,
+            metadata: d
+          },
+          update: {
+            name: d.name,
+            license_number: d.licenseNumber,
+            license_category: d.licenseCategory || 'CDL-A',
+            license_expiry_date: new Date(d.licenseExpiry || today()),
+            contact_number: d.contactNumber || '',
+            safety_score: d.safetyScore || 100,
+            status: mapDriverStatus(d.status),
+            region: d.region,
+            metadata: d
+          }
+        });
       }
-    });
-    for (const t of db.trips) {
-      const reg = vehicleRegistration(t.vehicle);
-      const vehicleId = reg ? toUuid(reg) : null;
-      const driverObj = findDriver(t.driver);
-      const driverId = driverObj ? toUuid(driverObj.id) : null;
 
-      const [source = 'Origin', destination = 'Destination'] = t.route.split(/\s*➔\s*|\s*➔\s*/);
-
-      await prisma.trips.upsert({
-        where: { id: toUuid(t.id) },
-        create: {
-          id: toUuid(t.id),
-          organization_id: orgId,
-          source: source.trim(),
-          destination: destination.trim(),
-          vehicle_id: vehicleId,
-          driver_id: driverId,
-          cargo_weight_kg: t.cargoWeight || 0,
-          planned_distance_km: t.distance || 0,
-          status: mapTripStatus(t.status),
-          metadata: t
-        },
-        update: {
-          source: source.trim(),
-          destination: destination.trim(),
-          vehicle_id: vehicleId,
-          driver_id: driverId,
-          cargo_weight_kg: t.cargoWeight || 0,
-          planned_distance_km: t.distance || 0,
-          status: mapTripStatus(t.status),
-          metadata: t
+      // 5. Persist Trips
+      const tripIds = db.trips.map(t => toUuid(t.id));
+      await tx.trips.deleteMany({
+        where: {
+          id: { notIn: tripIds }
         }
       });
-    }
+      for (const t of db.trips) {
+        const reg = vehicleRegistration(t.vehicle);
+        const vehicleId = reg ? toUuid(reg) : null;
+        const driverObj = findDriver(t.driver);
+        const driverId = driverObj ? toUuid(driverObj.id) : null;
 
-    // 6. Persist Maintenance Records
-    const maintIds = db.maintenanceRecords.map(m => toUuid(m.id));
-    await prisma.maintenance_logs.deleteMany({
-      where: {
-        id: { notIn: maintIds }
+        const [source = 'Origin', destination = 'Destination'] = t.route.split(/\s*➔\s*|\s*➔\s*/);
+
+        await tx.trips.upsert({
+          where: { id: toUuid(t.id) },
+          create: {
+            id: toUuid(t.id),
+            organization_id: orgId,
+            source: source.trim(),
+            destination: destination.trim(),
+            vehicle_id: vehicleId,
+            driver_id: driverId,
+            cargo_weight_kg: t.cargoWeight || 0,
+            planned_distance_km: t.distance || 0,
+            status: mapTripStatus(t.status),
+            metadata: t
+          },
+          update: {
+            source: source.trim(),
+            destination: destination.trim(),
+            vehicle_id: vehicleId,
+            driver_id: driverId,
+            cargo_weight_kg: t.cargoWeight || 0,
+            planned_distance_km: t.distance || 0,
+            status: mapTripStatus(t.status),
+            metadata: t
+          }
+        });
       }
-    });
-    for (const m of db.maintenanceRecords) {
-      const mReg = m.registrationNumber || vehicleRegistration(m.vehicle);
-      await prisma.maintenance_logs.upsert({
-        where: { id: toUuid(m.id) },
-        create: {
-          id: toUuid(m.id),
-          vehicle_id: toUuid(mReg),
-          type: m.type,
-          description: m.notes || '',
-          cost: m.estimatedCost || 0,
-          status: m.status === 'Completed' ? 'Closed' : 'Open',
-          metadata: m
-        },
-        update: {
-          vehicle_id: toUuid(mReg),
-          type: m.type,
-          description: m.notes || '',
-          cost: m.estimatedCost || 0,
-          status: m.status === 'Completed' ? 'Closed' : 'Open',
-          metadata: m
+
+      // 6. Persist Maintenance Records
+      const maintIds = db.maintenanceRecords.map(m => toUuid(m.id));
+      await tx.maintenance_logs.deleteMany({
+        where: {
+          id: { notIn: maintIds }
         }
       });
-    }
-
-    // 7. Persist Fuel Logs
-    const fuelIds = db.fuelLogs.map(fl => toUuid(fl.id));
-    await prisma.fuel_logs.deleteMany({
-      where: {
-        id: { notIn: fuelIds }
+      for (const m of db.maintenanceRecords) {
+        const mReg = m.registrationNumber || vehicleRegistration(m.vehicle);
+        await tx.maintenance_logs.upsert({
+          where: { id: toUuid(m.id) },
+          create: {
+            id: toUuid(m.id),
+            vehicle_id: toUuid(mReg),
+            type: m.type,
+            description: m.notes || '',
+            cost: m.estimatedCost || 0,
+            status: m.status === 'Completed' ? 'Closed' : 'Open',
+            metadata: m
+          },
+          update: {
+            vehicle_id: toUuid(mReg),
+            type: m.type,
+            description: m.notes || '',
+            cost: m.estimatedCost || 0,
+            status: m.status === 'Completed' ? 'Closed' : 'Open',
+            metadata: m
+          }
+        });
       }
-    });
-    for (const fl of db.fuelLogs) {
-      const flReg = fl.registrationNumber || vehicleRegistration(fl.vehicle);
-      await prisma.fuel_logs.upsert({
-        where: { id: toUuid(fl.id) },
-        create: {
-          id: toUuid(fl.id),
-          vehicle_id: toUuid(flReg),
-          trip_id: fl.tripId ? toUuid(fl.tripId) : null,
-          liters: fl.quantity || 0,
-          cost: fl.totalCost || 0,
-          metadata: fl
-        },
-        update: {
-          vehicle_id: toUuid(flReg),
-          trip_id: fl.tripId ? toUuid(fl.tripId) : null,
-          liters: fl.quantity || 0,
-          cost: fl.totalCost || 0,
-          metadata: fl
+
+      // 7. Persist Fuel Logs
+      const fuelIds = db.fuelLogs.map(fl => toUuid(fl.id));
+      await tx.fuel_logs.deleteMany({
+        where: {
+          id: { notIn: fuelIds }
         }
       });
-    }
-
-    // 8. Persist Expenses
-    const expIds = db.expenses.map(e => toUuid(e.id));
-    await prisma.expenses.deleteMany({
-      where: {
-        id: { notIn: expIds }
+      for (const fl of db.fuelLogs) {
+        const flReg = fl.registrationNumber || vehicleRegistration(fl.vehicle);
+        await tx.fuel_logs.upsert({
+          where: { id: toUuid(fl.id) },
+          create: {
+            id: toUuid(fl.id),
+            vehicle_id: toUuid(flReg),
+            trip_id: fl.tripId ? toUuid(fl.tripId) : null,
+            liters: fl.quantity || 0,
+            cost: fl.totalCost || 0,
+            metadata: fl
+          },
+          update: {
+            vehicle_id: toUuid(flReg),
+            trip_id: fl.tripId ? toUuid(fl.tripId) : null,
+            liters: fl.quantity || 0,
+            cost: fl.totalCost || 0,
+            metadata: fl
+          }
+        });
       }
-    });
-    for (const e of db.expenses) {
-      await prisma.expenses.upsert({
-        where: { id: toUuid(e.id) },
-        create: {
-          id: toUuid(e.id),
-          vehicle_id: toUuid(e.vehicle),
-          trip_id: e.tripId ? toUuid(e.tripId) : null,
-          type: mapExpenseType(e.category),
-          amount: e.amount || 0,
-          metadata: e
-        },
-        update: {
-          vehicle_id: toUuid(e.vehicle),
-          trip_id: e.tripId ? toUuid(e.tripId) : null,
-          type: mapExpenseType(e.category),
-          amount: e.amount || 0,
-          metadata: e
+
+      // 8. Persist Expenses
+      const expIds = db.expenses.map(e => toUuid(e.id));
+      await tx.expenses.deleteMany({
+        where: {
+          id: { notIn: expIds }
         }
       });
-    }
-
-    // 9. Persist Alerts / Notifications
-    const alertIds = db.notifications.map(n => toUuid(n.id));
-    await prisma.alerts.deleteMany({
-      where: {
-        id: { notIn: alertIds }
+      for (const e of db.expenses) {
+        await tx.expenses.upsert({
+          where: { id: toUuid(e.id) },
+          create: {
+            id: toUuid(e.id),
+            vehicle_id: toUuid(e.vehicle),
+            trip_id: e.tripId ? toUuid(e.tripId) : null,
+            type: mapExpenseType(e.category),
+            amount: e.amount || 0,
+            metadata: e
+          },
+          update: {
+            vehicle_id: toUuid(e.vehicle),
+            trip_id: e.tripId ? toUuid(e.tripId) : null,
+            type: mapExpenseType(e.category),
+            amount: e.amount || 0,
+            metadata: e
+          }
+        });
       }
-    });
-    for (const n of db.notifications) {
-      await prisma.alerts.upsert({
-        where: { id: toUuid(n.id) },
-        create: {
-          id: toUuid(n.id),
-          organization_id: orgId,
-          type: n.type || 'dispatch',
-          message: n.title,
-          severity: n.critical ? 'critical' : 'info',
-          is_read: n.status === 'read',
-          metadata: n
-        },
-        update: {
-          type: n.type || 'dispatch',
-          message: n.title,
-          severity: n.critical ? 'critical' : 'info',
-          is_read: n.status === 'read',
-          metadata: n
-        }
-      });
-    }
 
-    // 10. Persist Activity Timeline Logs
-    await prisma.activity_logs.deleteMany();
-    for (const al of db.activityTimeline) {
-      await prisma.activity_logs.create({
-        data: {
-          entity_type: al.type || 'system',
-          entity_id: toUuid(al.id),
-          action: al.title,
-          metadata: al
+      // 9. Persist Alerts / Notifications
+      const alertIds = db.notifications.map(n => toUuid(n.id));
+      await tx.alerts.deleteMany({
+        where: {
+          id: { notIn: alertIds }
         }
       });
-    }
+      for (const n of db.notifications) {
+        await tx.alerts.upsert({
+          where: { id: toUuid(n.id) },
+          create: {
+            id: toUuid(n.id),
+            organization_id: orgId,
+            type: n.type || 'dispatch',
+            message: n.title,
+            severity: n.critical ? 'critical' : 'info',
+            is_read: n.status === 'read',
+            metadata: n
+          },
+          update: {
+            type: n.type || 'dispatch',
+            message: n.title,
+            severity: n.critical ? 'critical' : 'info',
+            is_read: n.status === 'read',
+            metadata: n
+          }
+        });
+      }
+
+      // 10. Persist Activity Timeline Logs
+      await tx.activity_logs.deleteMany();
+      for (const al of db.activityTimeline) {
+        await tx.activity_logs.create({
+          data: {
+            entity_type: al.type || 'system',
+            entity_id: toUuid(al.id),
+            action: al.title,
+            metadata: al
+          }
+        });
+      }
+
+      // Restore replication role
+      await tx.$executeRawUnsafe("SET session_replication_role = 'origin';");
+    });
   } catch (error) {
     console.error('Error persisting state to PostgreSQL database:', error);
   }
