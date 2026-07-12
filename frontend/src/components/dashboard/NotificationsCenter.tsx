@@ -26,6 +26,7 @@ import {
   BellOff,
   Check
 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,21 +83,6 @@ const getPriorityBadge = (priority: Priority) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const SEED_NOTIFICATIONS: Notification[] = [
-  { id: 'N-001', title: "Vehicle TRK-201 entered maintenance", description: "Freightliner Cascadia has been checked in to Midwest Fleet Garage for brake pad replacement. Estimated completion in 2 days.", category: 'maintenance', priority: 'High', status: 'unread', timestamp: '5m ago', relatedVehicle: 'TRK-201', icon: Wrench, actionLabel: 'View Maintenance' },
-  { id: 'N-002', title: "Driver license expiring in 18 days", description: "James Carter's CDL-A license expires on July 30, 2026. Renewal must be completed before the expiry date to remain compliant.", category: 'compliance', priority: 'Critical', status: 'unread', timestamp: '12m ago', relatedDriver: 'James Carter', icon: Shield, actionLabel: 'View Driver' },
-  { id: 'N-003', title: "Trip #TR-501 completed successfully", description: "Chicago → Atlanta route completed. Cargo delivered on time. Final odometer: 142,800 mi. Trip duration: 9h 42m.", category: 'trips', priority: 'Low', status: 'unread', timestamp: '28m ago', relatedTrip: 'TR-501', relatedDriver: 'James Carter', icon: CheckCircle2, actionLabel: 'View Trip' },
-  { id: 'N-004', title: "Fuel cost exceeded monthly threshold", description: "Fleet fuel expenses reached $18,400 this month — 8% above the $17,000 monthly cap. Review fuel efficiency targets.", category: 'fuel', priority: 'High', status: 'unread', timestamp: '1h ago', icon: Fuel, actionLabel: 'View Analytics' },
-  { id: 'N-005', title: "Maintenance completed — TRK-109 released", description: "Ford Transit Cargo has completed scheduled oil change at Chicago Rapid Lube. Vehicle status returned to Available.", category: 'maintenance', priority: 'Low', status: 'read', timestamp: '2h ago', relatedVehicle: 'TRK-109', icon: CheckCircle2, actionLabel: 'View Vehicle' },
-  { id: 'N-006', title: "New vehicle registered: Peterbilt 579", description: "TRK-305 (Peterbilt 579) has been successfully registered to the fleet. Assigned to Midwest regional operations.", category: 'vehicles', priority: 'Medium', status: 'read', timestamp: '3h ago', relatedVehicle: 'TRK-305', icon: Truck, actionLabel: 'View Vehicle' },
-  { id: 'N-007', title: "Expense approval pending", description: "Brake line emergency repair expense of $780.00 submitted by Fleet Manager requires financial approval within 24 hours.", category: 'expenses', priority: 'High', status: 'unread', timestamp: '4h ago', relatedVehicle: 'TRK-201', icon: DollarSign, actionLabel: 'Review Expense' },
-  { id: 'N-008', title: "Driver Robert Blake — minor incident reported", description: "A minor collision was logged on Route I-90 near Gary, IN. No cargo damage. Vehicle inspection initiated.", category: 'drivers', priority: 'Critical', status: 'unread', timestamp: '5h ago', relatedDriver: 'Robert Blake', relatedVehicle: 'TRK-305', icon: AlertTriangle, actionLabel: 'View Report' },
-  { id: 'N-009', title: "Weekly report generated", description: "Fleet performance report for July 5–11, 2026 is ready. Includes KPIs, fuel trends, maintenance summary, and driver analytics.", category: 'reports', priority: 'Low', status: 'read', timestamp: '6h ago', icon: FileText, actionLabel: 'Download PDF' },
-  { id: 'N-010', title: "Fleet utilization reached 74%", description: "Current active fleet utilization is at 74% — above the 70% benchmark. Strong operational week recorded across all regions.", category: 'system', priority: 'Low', status: 'read', timestamp: '8h ago', icon: TrendingUp, actionLabel: 'View Analytics' },
-  { id: 'N-011', title: "Trip #TR-498 delayed — weather alert", description: "Maria Torres' Chicago → Memphis route delayed by 45 minutes due to severe weather on I-57 South. ETA updated to 4:20 PM.", category: 'trips', priority: 'High', status: 'unread', timestamp: '9h ago', relatedTrip: 'TR-498', relatedDriver: 'Maria Torres', icon: AlertTriangle, actionLabel: 'View Trip' },
-  { id: 'N-012', title: "Missing fuel receipt — TR-490", description: "Fuel log FL-003 for Peterbilt 579 has no receipt attached. Please upload the station invoice for compliance records.", category: 'fuel', priority: 'Medium', status: 'read', timestamp: 'Yesterday', relatedVehicle: 'TRK-305', icon: Fuel, actionLabel: 'Upload Receipt' },
-];
-
 const CATEGORIES = ['all', 'trips', 'vehicles', 'drivers', 'maintenance', 'fuel', 'expenses', 'compliance', 'reports', 'system'] as const;
 type CategoryTab = typeof CATEGORIES[number];
 
@@ -111,8 +97,33 @@ const PREF_TOGGLES = [
   { id: 'daily', label: 'Daily Digest', checked: false },
 ];
 
+const notificationIcon = (category: NotifCategory): React.ElementType => {
+  if (category === 'maintenance') return Wrench;
+  if (category === 'fuel') return Fuel;
+  if (category === 'expenses') return DollarSign;
+  if (category === 'compliance') return Shield;
+  if (category === 'vehicles') return Truck;
+  if (category === 'trips') return CheckCircle2;
+  return Info;
+};
+
+const toNotification = (notification: Record<string, any>): Notification => ({
+  id: notification.id,
+  title: notification.title,
+  description: notification.description || notification.desc || '',
+  category: notification.category || 'system',
+  priority: notification.priority || (notification.critical ? 'Critical' : 'Medium'),
+  status: notification.status || 'unread',
+  timestamp: notification.timestamp || notification.time || 'Just now',
+  relatedVehicle: notification.relatedVehicle,
+  relatedDriver: notification.relatedDriver,
+  relatedTrip: notification.relatedTrip,
+  icon: notificationIcon(notification.category || 'system'),
+  actionLabel: notification.actionLabel
+});
+
 export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShowToast }) => {
-  const [notifications, setNotifications] = useState<Notification[]>(SEED_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null);
   const [activeCategory, setActiveCategory] = useState<CategoryTab>('all');
   const [search, setSearch] = useState('');
@@ -122,9 +133,23 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
   const [prefs, setPrefs] = useState(PREF_TOGGLES);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiFetch('/api/fleet/notifications?all=true');
+      if (!response.ok) throw new Error('Unable to load notifications.');
+      const data = await response.json();
+      setNotifications(data.map(toNotification));
+    } catch {
+      onShowToast('Unable to load notifications.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(t);
+    loadNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const unreadCount = notifications.filter(n => n.status === 'unread').length;
@@ -133,22 +158,38 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
   const tripCount = notifications.filter(n => n.category === 'trips').length;
   const complianceCount = notifications.filter(n => n.category === 'compliance').length;
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
+    const response = await apiFetch('/api/fleet/notifications/read-all', { method: 'PUT' });
+    if (!response.ok) return onShowToast('Unable to update notifications.');
     setNotifications(prev => prev.map(n => ({ ...n, status: 'read' as NotifStatus })));
     onShowToast('All notifications marked as read.');
   };
 
-  const markRead = (id: string) => {
+  const markRead = async (id: string) => {
+    const response = await apiFetch(`/api/fleet/notifications/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'read' })
+    });
+    if (!response.ok) return;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'read' as NotifStatus } : n));
   };
 
-  const archiveNotif = (id: string) => {
+  const archiveNotif = async (id: string) => {
+    const response = await apiFetch(`/api/fleet/notifications/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'archived' })
+    });
+    if (!response.ok) return onShowToast('Unable to archive notification.');
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'archived' as NotifStatus } : n));
     if (selectedNotif?.id === id) setSelectedNotif(null);
     onShowToast('Notification archived.');
   };
 
-  const deleteNotif = (id: string) => {
+  const deleteNotif = async (id: string) => {
+    const response = await apiFetch(`/api/fleet/notifications/${id}`, { method: 'DELETE' });
+    if (!response.ok) return onShowToast('Unable to remove notification.');
     setNotifications(prev => prev.filter(n => n.id !== id));
     if (selectedNotif?.id === id) setSelectedNotif(null);
     onShowToast('Notification removed.');
@@ -212,7 +253,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
           <button onClick={() => onShowToast('Exporting activity log...')} className="px-3 py-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center space-x-1.5">
             <Download className="w-3.5 h-3.5" /><span>Export</span>
           </button>
-          <button onClick={() => onShowToast('Refreshing notifications...')} className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 rounded-xl transition-all cursor-pointer">
+          <button onClick={loadNotifications} className="p-2 border border-border-gray bg-white hover:bg-slate-50 text-slate-500 rounded-xl transition-all cursor-pointer">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -352,7 +393,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}
-                onClick={() => { setSelectedNotif(notif); markRead(notif.id); }}
+                onClick={() => { setSelectedNotif(notif); void markRead(notif.id); }}
                 className={`group bg-white border rounded-2xl p-4 cursor-pointer transition-all shadow-sm hover:shadow-md ${
                   isSelected ? 'border-primary/40 ring-1 ring-primary/20' : 'border-border-gray'
                 } ${isUnread ? 'bg-blue-50/30' : ''}`}
@@ -407,7 +448,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                       <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isUnread && (
                           <button
-                            onClick={e => { e.stopPropagation(); markRead(notif.id); onShowToast('Marked as read.'); }}
+                            onClick={e => { e.stopPropagation(); void markRead(notif.id); onShowToast('Marked as read.'); }}
                             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary cursor-pointer transition-colors"
                             title="Mark read"
                           >
@@ -415,14 +456,14 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                           </button>
                         )}
                         <button
-                          onClick={e => { e.stopPropagation(); archiveNotif(notif.id); }}
+                          onClick={e => { e.stopPropagation(); void archiveNotif(notif.id); }}
                           className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
                           title="Archive"
                         >
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={e => { e.stopPropagation(); deleteNotif(notif.id); }}
+                          onClick={e => { e.stopPropagation(); void deleteNotif(notif.id); }}
                           className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-500 cursor-pointer transition-colors"
                           title="Delete"
                         >
@@ -537,13 +578,13 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ onShow
                 )}
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => { archiveNotif(selectedNotif.id); }}
+                    onClick={() => { void archiveNotif(selectedNotif.id); }}
                     className="py-1.5 border border-border-gray bg-white text-slate-600 text-xs font-bold rounded-xl cursor-pointer hover:bg-slate-50 flex items-center justify-center space-x-1"
                   >
                     <Archive className="w-3.5 h-3.5" /><span>Archive</span>
                   </button>
                   <button
-                    onClick={() => { deleteNotif(selectedNotif.id); }}
+                    onClick={() => { void deleteNotif(selectedNotif.id); }}
                     className="py-1.5 border border-rose-100 bg-rose-50 text-rose-500 text-xs font-bold rounded-xl cursor-pointer hover:bg-rose-100/50 flex items-center justify-center space-x-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" /><span>Delete</span>

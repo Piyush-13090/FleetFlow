@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Check, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { apiFetch, setSessionToken } from '../lib/api';
 
 interface LoginCardProps {
   onLoginSuccess: () => void;
@@ -48,7 +49,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
     setSuccessStep(1); // Step 1: Validating credentials
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -56,6 +57,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        setSessionToken(data.token);
         setSuccessStep(2); // Step 2: Generating secure JWT Token
         await new Promise((resolve) => setTimeout(resolve, 800));
         setSuccessStep(3); // Step 3: Loading Fleet Dashboard

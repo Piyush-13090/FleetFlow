@@ -18,6 +18,7 @@ import {
   TrendingDown,
   FileText
 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -186,59 +187,66 @@ export const FuelExpenseManagement: React.FC<FuelExpenseProps> = ({ onShowToast 
   const [eBy, setEBy] = useState('Fleet Manager');
   const [eNotes, setENotes] = useState('');
 
-  const seedData = () => {
-    setFuelLogs([
-      { id: 'FL-001', vehicle: 'Freightliner Cascadia', registrationNumber: 'TRK-201', driver: 'James Carter', tripId: 'TR-501', station: "Love's Travel Stop #102", fuelType: 'Diesel', quantity: 85, pricePerLiter: 3.58, totalCost: 304.30, odometer: 142200, date: '2026-07-11' },
-      { id: 'FL-002', vehicle: 'Ford Transit Cargo', registrationNumber: 'TRK-109', driver: 'Maria Torres', tripId: 'TR-498', station: 'Pilot Flying J Chicago', fuelType: 'Diesel', quantity: 60, pricePerLiter: 3.62, totalCost: 217.20, odometer: 89400, date: '2026-07-10' },
-      { id: 'FL-003', vehicle: 'Peterbilt 579', registrationNumber: 'TRK-305', driver: 'Robert Blake', tripId: 'TR-490', station: 'Flying J Truck Stop', fuelType: 'Diesel', quantity: 100, pricePerLiter: 3.55, totalCost: 355.00, odometer: 210100, date: '2026-07-09' },
-    ]);
-    setExpenses([
-      { id: 'EX-001', vehicle: 'TRK-201', tripId: 'TR-501', category: 'Toll', amount: 45.00, date: '2026-07-11', recordedBy: 'James Carter', status: 'Approved', notes: 'Midwest turnpike pass' },
-      { id: 'EX-002', vehicle: 'TRK-109', tripId: 'TR-498', category: 'Parking', amount: 22.00, date: '2026-07-10', recordedBy: 'Maria Torres', status: 'Pending', notes: 'Overnight dock parking' },
-      { id: 'EX-003', vehicle: 'TRK-305', tripId: 'TR-490', category: 'Maintenance', amount: 320.00, date: '2026-07-09', recordedBy: 'Fleet Manager', status: 'Approved', notes: 'Air filter + belt replacement' },
-      { id: 'EX-004', vehicle: 'TRK-201', tripId: 'TR-488', category: 'Repairs', amount: 780.00, date: '2026-07-08', recordedBy: 'Fleet Manager', status: 'Approved', notes: 'Emergency brake line repair' },
-    ]);
+  const loadLedger = async () => {
+    setIsLoading(true);
+    try {
+      const [fuelResponse, expensesResponse] = await Promise.all([
+        apiFetch('/api/fleet/fuel-logs'),
+        apiFetch('/api/fleet/expenses')
+      ]);
+      if (fuelResponse.ok) setFuelLogs(await fuelResponse.json());
+      if (expensesResponse.ok) setExpenses(await expensesResponse.json());
+    } catch {
+      onShowToast('Unable to load the financial ledger.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => { seedData(); setIsLoading(false); }, 600);
+    loadLedger();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRefresh = () => {
     onShowToast('Syncing real-time financial ledger data...');
-    setIsLoading(true);
-    setTimeout(() => { seedData(); setIsLoading(false); }, 700);
+    loadLedger();
   };
 
-  const handleAddFuel = (e: React.FormEvent) => {
+  const handleAddFuel = async (e: React.FormEvent) => {
     e.preventDefault();
-    const qty = parseFloat(fQty); const ppl = parseFloat(fPPL);
-    const newLog: FuelLog = {
-      id: `FL-${String(fuelLogs.length + 10).padStart(3, '0')}`,
-      vehicle: fVehicle, registrationNumber: fVehicle,
-      driver: fDriver, tripId: fTrip, station: fStation,
-      fuelType: fFuelType, quantity: qty, pricePerLiter: ppl,
-      totalCost: parseFloat((qty * ppl).toFixed(2)),
-      odometer: parseInt(fOdo), date: new Date().toISOString().slice(0, 10)
-    };
-    setFuelLogs(prev => [newLog, ...prev]);
-    setShowFuelModal(false);
-    onShowToast(`Fuel log ${newLog.id} recorded successfully.`);
+    try {
+      const response = await apiFetch('/api/fleet/fuel-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationNumber: fVehicle, driver: fDriver, tripId: fTrip, station: fStation, fuelType: fFuelType, quantity: Number(fQty), pricePerLiter: Number(fPPL), odometer: Number(fOdo), notes: fNotes })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Unable to record fuel log.');
+      setFuelLogs((records) => [data.record, ...records]);
+      setShowFuelModal(false);
+      onShowToast(`Fuel log ${data.record.id} recorded successfully.`);
+    } catch (error) {
+      onShowToast(error instanceof Error ? error.message : 'Unable to record fuel log.');
+    }
   };
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newExp: Expense = {
-      id: `EX-${String(expenses.length + 10).padStart(3, '0')}`,
-      vehicle: eVehicle, tripId: eTrip, category: eCategory,
-      amount: parseFloat(eAmount), date: eDate,
-      recordedBy: eBy, status: 'Pending', notes: eNotes
-    };
-    setExpenses(prev => [newExp, ...prev]);
-    setShowExpModal(false);
-    onShowToast(`Expense ${newExp.id} submitted for approval.`);
+    try {
+      const response = await apiFetch('/api/fleet/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicle: eVehicle, tripId: eTrip, category: eCategory, amount: Number(eAmount), date: eDate, recordedBy: eBy, notes: eNotes })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Unable to submit expense.');
+      setExpenses((records) => [data.record, ...records]);
+      setShowExpModal(false);
+      onShowToast(`Expense ${data.record.id} submitted for approval.`);
+    } catch (error) {
+      onShowToast(error instanceof Error ? error.message : 'Unable to submit expense.');
+    }
   };
 
   const toggleRow = (id: string, e: React.MouseEvent) => {

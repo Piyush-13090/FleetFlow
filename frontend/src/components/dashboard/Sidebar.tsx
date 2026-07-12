@@ -12,8 +12,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  LogOut,
-  FileQuestion
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,7 +37,6 @@ const menuItems: MenuItem[] = [
   { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'settings', label: 'Settings', icon: Settings },
-  { id: 'notfound', label: '404 Demo', icon: FileQuestion },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) => {

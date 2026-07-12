@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 import { BackgroundPattern } from './components/BackgroundPattern';
@@ -6,13 +6,31 @@ import { FeatureCard } from './components/FeatureCard';
 import { LoginCard } from './components/LoginCard';
 import { CommandControlLanding } from './components/CommandControlLanding';
 import { TransitOpsDashboard } from './components/dashboard/TransitOpsDashboard';
+import { apiFetch, clearSessionToken, getSessionToken } from './lib/api';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getSessionToken()));
   const [showLogin, setShowLogin] = useState(false);
 
+  useEffect(() => {
+    if (!getSessionToken()) return;
+
+    apiFetch('/api/auth/me').then((response) => {
+      if (!response.ok) {
+        clearSessionToken();
+        setIsAuthenticated(false);
+      }
+    }).catch(() => {
+      clearSessionToken();
+      setIsAuthenticated(false);
+    });
+  }, []);
+
   if (isAuthenticated) {
-    return <TransitOpsDashboard onLogout={() => setIsAuthenticated(false)} />;
+    return <TransitOpsDashboard onLogout={() => {
+      clearSessionToken();
+      setIsAuthenticated(false);
+    }} />;
   }
 
   // Marketing landing page — CTAs route to the login screen.

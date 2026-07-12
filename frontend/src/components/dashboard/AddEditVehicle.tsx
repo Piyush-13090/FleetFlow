@@ -15,6 +15,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import type { VehicleData } from './VehicleRegistry';
+import { apiFetch } from '../../lib/api';
 
 interface AddEditVehicleProps {
   initialData?: VehicleData | null;
@@ -234,17 +235,13 @@ export const AddEditVehicle: React.FC<AddEditVehicleProps> = ({
     try {
       let res;
       if (isEditMode) {
-        // Mock edit update
-        res = await fetch(`/api/fleet/vehicles/${initialData.registrationNumber}`, { method: 'DELETE' });
-        if (res.ok) {
-          res = await fetch('/api/fleet/vehicles', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        }
+        res = await apiFetch(`/api/fleet/vehicles/${initialData.registrationNumber}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
       } else {
-        res = await fetch('/api/fleet/vehicles', {
+        res = await apiFetch('/api/fleet/vehicles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

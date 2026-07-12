@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { AddEditDriver } from './AddEditDriver';
 import { DriverDetails } from './DriverDetails';
+import { apiFetch } from '../../lib/api';
 
 export interface DriverData {
   id: string;
@@ -99,7 +100,7 @@ export const DriverManagement: React.FC<DriverManagementProps> = ({ onShowToast 
   const fetchDrivers = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/fleet/drivers');
+      const res = await apiFetch('/api/fleet/drivers');
       if (res.ok) {
         const data = await res.json();
         setDrivers(data);
@@ -146,7 +147,7 @@ export const DriverManagement: React.FC<DriverManagementProps> = ({ onShowToast 
   const handleDeleteDriver = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const res = await fetch(`/api/fleet/drivers/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/fleet/drivers/${id}`, { method: 'DELETE' });
       if (res.ok) {
         onShowToast(`Driver dossier #${id} archived.`);
         if (selectedDriver?.id === id) {

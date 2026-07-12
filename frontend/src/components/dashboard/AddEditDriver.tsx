@@ -15,6 +15,7 @@ import {
   XCircle
 } from 'lucide-react';
 import type { DriverData } from './DriverManagement';
+import { apiFetch } from '../../lib/api';
 
 interface AddEditDriverProps {
   initialData?: DriverData | null;
@@ -277,16 +278,13 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
     try {
       let res;
       if (isEditMode) {
-        res = await fetch(`/api/fleet/drivers/${initialData.id}`, { method: 'DELETE' });
-        if (res.ok) {
-          res = await fetch('/api/fleet/drivers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        }
+        res = await apiFetch(`/api/fleet/drivers/${initialData.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
       } else {
-        res = await fetch('/api/fleet/drivers', {
+        res = await apiFetch('/api/fleet/drivers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

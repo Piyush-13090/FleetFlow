@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { AddEditVehicle } from './AddEditVehicle';
 import { VehicleDetails } from './VehicleDetails';
+import { apiFetch } from '../../lib/api';
 
 export interface VehicleData {
   registrationNumber: string;
@@ -103,7 +104,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
   const fetchVehicles = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/fleet/vehicles');
+      const res = await apiFetch('/api/fleet/vehicles');
       if (res.ok) {
         const data = await res.json();
         setVehicles(data);
@@ -153,7 +154,7 @@ export const VehicleRegistry: React.FC<VehicleRegistryProps> = ({ onShowToast })
   const handleDeleteVehicle = async (regNum: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const res = await fetch(`/api/fleet/vehicles/${regNum}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/fleet/vehicles/${regNum}`, { method: 'DELETE' });
       if (res.ok) {
         onShowToast(`Asset #${regNum} decommissioned.`);
         if (selectedVehicle?.registrationNumber === regNum) {

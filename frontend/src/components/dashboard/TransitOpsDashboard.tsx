@@ -28,6 +28,7 @@ import { NotificationsCenter } from './NotificationsCenter';
 import { ProfileSettings } from './ProfileSettings';
 import { AccessDenied } from './AccessDenied';
 import { NotFound404 } from './NotFound404';
+import { apiFetch } from '../../lib/api';
 
 interface TransitOpsDashboardProps {
   onLogout: () => void;
@@ -173,10 +174,10 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
     setIsLoading(true);
     try {
       const [tripsRes, driversRes, notifRes, kpisRes] = await Promise.all([
-        fetch('/api/fleet/trips'),
-        fetch('/api/fleet/drivers'),
-        fetch('/api/fleet/notifications'),
-        fetch('/api/fleet/kpis')
+        apiFetch('/api/fleet/trips'),
+        apiFetch('/api/fleet/drivers'),
+        apiFetch('/api/fleet/notifications?status=unread'),
+        apiFetch('/api/fleet/kpis')
       ]);
 
       if (tripsRes.ok) setRows(await tripsRes.json());
@@ -237,7 +238,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
 
   const handleDeleteRow = async (id: string) => {
     try {
-      const res = await fetch(`/api/fleet/trips/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/fleet/trips/${id}`, { method: 'DELETE' });
       if (res.ok) {
         showToast(`Removed dispatch entry ${id}`);
         loadDashboardData();
@@ -250,7 +251,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
   // Modals submits
   const handleAddTrip = async (newTrip: TableRowData) => {
     try {
-      const res = await fetch('/api/fleet/trips', {
+      const res = await apiFetch('/api/fleet/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTrip)
@@ -266,7 +267,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
 
   const handleAddVehicle = async (newVehicle: { id: string; type: string }) => {
     try {
-      const res = await fetch('/api/fleet/vehicles', {
+      const res = await apiFetch('/api/fleet/vehicles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newVehicle)
@@ -283,7 +284,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
 
   const handleAddDriver = async (newDriverName: string) => {
     try {
-      const res = await fetch('/api/fleet/drivers', {
+      const res = await apiFetch('/api/fleet/drivers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newDriverName })
@@ -299,7 +300,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
 
   const handleClearNotification = async (id: string) => {
     try {
-      const res = await fetch(`/api/fleet/notifications/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/fleet/notifications/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setNotifications(prev => prev.filter(n => n.id !== id));
       }
@@ -310,7 +311,7 @@ export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogo
 
   const handleClearAllNotifications = async () => {
     try {
-      const res = await fetch('/api/fleet/notifications', { method: 'DELETE' });
+      const res = await apiFetch('/api/fleet/notifications?status=unread', { method: 'DELETE' });
       if (res.ok) {
         setNotifications([]);
         showToast("All dispatcher alerts read.");

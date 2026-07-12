@@ -20,6 +20,7 @@ import {
 import type { DriverData } from './DriverManagement';
 import { AddEditTrip } from './AddEditTrip';
 import { TripDetails } from './TripDetails';
+import { apiFetch } from '../../lib/api';
 
 interface TripData {
   id: string;
@@ -87,8 +88,8 @@ export const TripManagement: React.FC<TripManagementProps> = ({ onShowToast }) =
     setIsLoading(true);
     try {
       const [tripsRes, driversRes] = await Promise.all([
-        fetch('/api/fleet/trips'),
-        fetch('/api/fleet/drivers')
+        apiFetch('/api/fleet/trips'),
+        apiFetch('/api/fleet/drivers')
       ]);
 
       if (tripsRes.ok) {

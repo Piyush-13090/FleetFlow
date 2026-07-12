@@ -17,6 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import type { DriverData } from './DriverManagement';
+import { apiFetch } from '../../lib/api';
 
 interface VehicleData {
   registrationNumber: string;
@@ -82,8 +83,8 @@ export const AddEditTrip: React.FC<AddEditTripProps> = ({
     const fetchData = async () => {
       try {
         const [dRes, vRes] = await Promise.all([
-          fetch('/api/fleet/drivers'),
-          fetch('/api/fleet/vehicles')
+          apiFetch('/api/fleet/drivers'),
+          apiFetch('/api/fleet/vehicles')
         ]);
         if (dRes.ok) setDrivers(await dRes.json());
         if (vRes.ok) {
@@ -195,7 +196,7 @@ export const AddEditTrip: React.FC<AddEditTripProps> = ({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/fleet/trips', {
+      const res = await apiFetch('/api/fleet/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

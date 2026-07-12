@@ -13,6 +13,7 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 interface MaintenanceRecord {
   id: string;
@@ -125,61 +126,16 @@ export const MaintenanceManagement: React.FC<MaintenanceManagementProps> = ({ on
   const fetchOperationalData = async () => {
     setIsLoading(true);
     try {
-      const vRes = await fetch('/api/fleet/vehicles');
-      if (vRes.ok) setVehicles(await vRes.json());
-      
-      // Mock Maintenance Records
-      const mockRecords: MaintenanceRecord[] = [
-        {
-          id: 'MA-908',
-          vehicle: 'Freightliner Cascadia (#TRK-201)',
-          registrationNumber: 'TRK-201',
-          type: 'Brake Service',
-          workshop: 'Midwest Fleet Garage',
-          mechanic: 'Tom Miller',
-          scheduledDate: '2026-07-11',
-          estimatedCost: 850,
-          status: 'In Progress',
-          priority: 'High',
-          notes: 'Front brake pads worn down to 15%. Require immediate replacement.',
-          partsUsed: [
-            { name: 'Ceramic Brake Pads (Set)', qty: 2, cost: 280 },
-            { name: 'Fluid Refill', qty: 1, cost: 45 }
-          ]
-        },
-        {
-          id: 'MA-907',
-          vehicle: 'Ford Transit Cargo (#TRK-109)',
-          registrationNumber: 'TRK-109',
-          type: 'Oil Change',
-          workshop: 'Chicago Rapid Lube',
-          mechanic: 'Sarah Jenkins',
-          scheduledDate: '2026-07-10',
-          estimatedCost: 120,
-          status: 'Completed',
-          priority: 'Low',
-          notes: 'Standard 10,000 mi synthetic oil change.',
-          partsUsed: [
-            { name: 'Synthetic Oil (5W-30)', qty: 6, cost: 72 },
-            { name: 'Premium Oil Filter', qty: 1, cost: 18 }
-          ]
-        },
-        {
-          id: 'MA-909',
-          vehicle: 'Chevrolet Bolt EV (#TRK-302)',
-          registrationNumber: 'TRK-302',
-          type: 'General Service',
-          workshop: 'EV Hub Chicago',
-          mechanic: 'Marcus Vance',
-          scheduledDate: '2026-07-15',
-          estimatedCost: 350,
-          status: 'Scheduled',
-          priority: 'Medium',
-          notes: 'Annual diagnostic battery check and tire rotation.'
-        }
-      ];
-      setRecords(mockRecords);
-      if (mockRecords.length > 0) setSelectedRecord(mockRecords[0]);
+      const [vehiclesResponse, maintenanceResponse] = await Promise.all([
+        apiFetch('/api/fleet/vehicles'),
+        apiFetch('/api/fleet/maintenance')
+      ]);
+      if (vehiclesResponse.ok) setVehicles(await vehiclesResponse.json());
+      if (maintenanceResponse.ok) {
+        const maintenanceRecords = await maintenanceResponse.json();
+        setRecords(maintenanceRecords);
+        if (maintenanceRecords.length > 0 && !selectedRecord) setSelectedRecord(maintenanceRecords[0]);
+      }
 
     } catch {
       onShowToast('Error loading maintenance logs.');
@@ -206,61 +162,59 @@ export const MaintenanceManagement: React.FC<MaintenanceManagementProps> = ({ on
       return;
     }
 
-    const selectedVehicle = vehicles.find(v => v.registrationNumber === selectedReg);
-    const newRecord: MaintenanceRecord = {
-      id: `MA-${Math.floor(100 + Math.random() * 900)}`,
-      vehicle: `${selectedVehicle?.name} (#${selectedReg})`,
-      registrationNumber: selectedReg,
-      type: maintType,
-      workshop,
-      mechanic,
-      scheduledDate: schedDate,
-      estimatedCost: Number(estCost),
-      status: 'Scheduled',
-      priority: priorityVal,
-      notes
-    };
-
-    setRecords(prev => [newRecord, ...prev]);
-    setShowAddModal(false);
-    onShowToast(`Maintenance scheduled for ${selectedVehicle?.name}. Vehicle status set to In Shop.`);
+    try {
+      const response = await apiFetch('/api/fleet/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationNumber: selectedReg,
+          type: maintType,
+          workshop,
+          mechanic,
+          scheduledDate: schedDate,
+          estimatedCost: Number(estCost),
+          priority: priorityVal,
+          notes
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Unable to schedule maintenance.');
+      setShowAddModal(false);
+      await fetchOperationalData();
+      onShowToast(`Maintenance scheduled for ${data.record.vehicle}. Vehicle status set to In Shop.`);
+    } catch (error) {
+      onShowToast(error instanceof Error ? error.message : 'Unable to schedule maintenance.');
+    }
   };
 
   // Complete repair logic
-  const handleCompleteSubmit = (recordId: string, e: React.FormEvent) => {
+  const handleCompleteSubmit = async (recordId: string, e: React.FormEvent) => {
     e.preventDefault();
     if (!qualityChecked) {
       onShowToast('Please verify quality inspection before completing repair.');
       return;
     }
 
-    setRecords(prev => prev.map(rec => {
-      if (rec.id === recordId) {
-        return {
-          ...rec,
+    try {
+      const currentRecord = records.find((record) => record.id === recordId);
+      const response = await apiFetch(`/api/fleet/maintenance/${recordId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           status: 'Completed',
           estimatedCost: Number(finalCost),
-          notes: `${rec.notes || ''} [Completed Notes: ${techNotes}]`
-        };
-      }
-      return rec;
-    }));
-
-    // If selected record, update it too
-    setSelectedRecord(prev => {
-      if (prev && prev.id === recordId) {
-        return {
-          ...prev,
-          status: 'Completed',
-          estimatedCost: Number(finalCost),
-          notes: `${prev.notes || ''} [Completed Notes: ${techNotes}]`
-        };
-      }
-      return prev;
-    });
-
-    setShowCompletePanel(null);
-    onShowToast(`Repair #${recordId} completed. Vehicle released back to Available status.`);
+          notes: `${currentRecord?.notes || ''} [Completed Notes: ${techNotes}]`
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Unable to complete maintenance.');
+      setRecords((currentRecords) => currentRecords.map((record) => record.id === recordId ? data.record : record));
+      setSelectedRecord(data.record);
+      setShowCompletePanel(null);
+      onShowToast(`Repair #${recordId} completed. Vehicle released back to Available status.`);
+    } catch (error) {
+      onShowToast(error instanceof Error ? error.message : 'Unable to complete maintenance.');
+    }
   };
 
   const toggleRowExpand = (id: string, e: React.MouseEvent) => {
