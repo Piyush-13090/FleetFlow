@@ -4,13 +4,20 @@ import { CheckCircle } from 'lucide-react';
 import { BackgroundPattern } from './components/BackgroundPattern';
 import { FeatureCard } from './components/FeatureCard';
 import { LoginCard } from './components/LoginCard';
+import { CommandControlLanding } from './components/CommandControlLanding';
 import { TransitOpsDashboard } from './components/dashboard/TransitOpsDashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   if (isAuthenticated) {
     return <TransitOpsDashboard onLogout={() => setIsAuthenticated(false)} />;
+  }
+
+  // Marketing landing page — CTAs route to the login screen.
+  if (!showLogin) {
+    return <CommandControlLanding onEnter={() => setShowLogin(true)} />;
   }
 
   return (
