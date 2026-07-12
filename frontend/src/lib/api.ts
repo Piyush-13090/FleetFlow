@@ -1,4 +1,4 @@
-const sessionStorageKey = 'transitops.session-token';
+const sessionStorageKey = 'fleetflow.session-token';
 
 export const getSessionToken = () => localStorage.getItem(sessionStorageKey);
 

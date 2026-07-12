@@ -47,7 +47,7 @@ const PERMISSION_MATRIX = [
 const FAQ_ITEMS = [
   {
     q: "Why don't I have access to this resource?",
-    a: "Your current role (Fleet Manager) doesn't include permission to access this module. TransitOps uses enterprise-grade RBAC — each role grants access only to the data and features required for that role's responsibilities."
+    a: "Your current role (Fleet Manager) doesn't include permission to access this module. FleetFlow uses enterprise-grade RBAC — each role grants access only to the data and features required for that role's responsibilities."
   },
   {
     q: "My administrator restricted this feature for my account.",
@@ -59,7 +59,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "The resource you attempted to access may require additional approval.",
-    a: "Some modules in TransitOps require an explicit access grant even within the same role tier. Submit a permission request via the form below for administrator review."
+    a: "Some modules in FleetFlow require an explicit access grant even within the same role tier. Submit a permission request via the form below for administrator review."
   },
 ];
 
@@ -314,7 +314,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
               <div className="flex-1 space-y-2">
                 <div>
                   <h4 className="text-sm font-black text-text-dark">Alex Thompson</h4>
-                  <p className="text-[10.5px] text-slate-400 font-medium">alex.thompson@transitops.com</p>
+                  <p className="text-[10.5px] text-slate-400 font-medium">alex.thompson@fleetflow.io</p>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <span className="px-2 py-0.5 bg-blue-50 text-primary border border-blue-100 rounded-full text-[9.5px] font-black">Fleet Manager</span>
@@ -325,7 +325,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
                 </div>
                 <div className="pt-1.5 border-t border-border-gray/50 grid grid-cols-2 gap-2">
                   {[
-                    { l: 'Workspace', v: 'TransitOps HQ' },
+                    { l: 'Workspace', v: 'FleetFlow HQ' },
                     { l: 'Region', v: 'Midwest' },
                     { l: 'Employee ID', v: 'EMP-4821' },
                     { l: 'Permission Level', v: 'Level 2' },
@@ -407,7 +407,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
         >
           <div className="p-4 border-b border-border-gray/50">
             <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight">Permission Matrix — Fleet Manager Role</h3>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Your current access level across all TransitOps modules.</p>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Your current access level across all FleetFlow modules.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left border-collapse">
@@ -544,7 +544,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
             </div>
             <div className="space-y-2 pl-0.5">
               {[
-                'TransitOps uses enterprise-grade Role-Based Access Control (RBAC) to protect operational and financial data.',
+                'FleetFlow uses enterprise-grade Role-Based Access Control (RBAC) to protect operational and financial data.',
                 'Every navigation request is validated against your role policy on both the frontend and backend.',
                 'This access denial has been logged to your account\'s security audit trail for review.',
               ].map((line, i) => (
@@ -573,7 +573,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
               </div>
               <div>
                 <h4 className="text-[11px] font-black text-slate-800">AI Assistant</h4>
-                <p className="text-[9.5px] text-slate-400 font-medium">TransitOps Guide</p>
+                <p className="text-[9.5px] text-slate-400 font-medium">FleetFlow Guide</p>
               </div>
             </div>
             <div className="space-y-2">
@@ -611,7 +611,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
           className="flex items-center justify-center space-x-2 text-[10px] font-semibold text-slate-400 py-2"
         >
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-          <span>Error 403 — Forbidden · TransitOps Enterprise RBAC · This event has been logged.</span>
+          <span>Error 403 — Forbidden · FleetFlow Enterprise RBAC · This event has been logged.</span>
         </motion.div>
 
       </div>

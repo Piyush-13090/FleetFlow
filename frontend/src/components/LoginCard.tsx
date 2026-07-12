@@ -9,7 +9,7 @@ interface LoginCardProps {
 }
 
 export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('admin@transitops.com');
+  const [email, setEmail] = useState('admin@fleetflow.io');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -71,7 +71,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
         setIsSubmitting(false);
         setSuccessStep(null);
         setErrors({
-          email: data.message || 'Invalid credentials. Use admin@transitops.com',
+          email: data.message || 'Invalid credentials. Use admin@fleetflow.io',
           password: 'Use password123 for demo authentication'
         });
         triggerShake();
@@ -151,7 +151,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   </motion.div>
                   <h3 className="text-xl font-bold text-text-dark">Access Granted</h3>
                   <p className="text-sm text-slate-500 mt-2">
-                    Welcome to TransitOps Hub. Redirecting...
+                    Welcome to FleetFlow Hub. Redirecting...
                   </p>
                 </>
               )}
@@ -164,17 +164,17 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
       <motion.div
         animate={shake ? { x: [-10, 10, -10, 10, -5, 5, 0] } : {}}
         transition={{ duration: 0.4 }}
-        className="glass-panel w-full rounded-[18px] p-8 sm:p-10 shadow-2xl relative border border-white/30"
+        className="cc-glass w-full rounded-[20px] p-8 sm:p-10 cc-shadow-lg relative border border-[#E5E7EB]/80"
       >
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-text-dark tracking-tight">Welcome Back</h2>
-          <p className="text-sm text-slate-500 mt-1">Continue to your TransitOps workspace</p>
+          <h2 className="cc-display text-3xl font-bold text-[#0A0A0A] tracking-tight">Welcome Back</h2>
+          <p className="text-sm text-[#4B5563] mt-2">Continue to your FleetFlow workspace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email Address Input */}
           <div className="space-y-1.5 text-left">
-            <label htmlFor="email" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <label htmlFor="email" className="block text-xs font-semibold text-[#4B5563] uppercase tracking-wider">
               Corporate Email
             </label>
             <div className="relative">
@@ -188,8 +188,8 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   setEmail(e.target.value);
                   if (errors.email) setErrors({ ...errors, email: undefined });
                 }}
-                className={`w-full pl-11 pr-4 py-3 bg-white/70 border rounded-xl text-sm text-text-dark transition-all duration-200 input-glow ${
-                  errors.email ? 'border-danger-red/60 focus:border-danger-red focus:ring-danger-red/10' : 'border-border-gray'
+                className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-[#0A0A0A] transition-all duration-200 focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 focus:outline-none ${
+                  errors.email ? 'border-danger-red/60 focus:border-danger-red focus:ring-danger-red/10' : 'border-[#E5E7EB]'
                 }`}
               />
             </div>
@@ -208,12 +208,12 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           {/* Password Input */}
           <div className="space-y-1.5 text-left">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <label htmlFor="password" className="block text-xs font-semibold text-[#4B5563] uppercase tracking-wider">
                 Password
               </label>
               <a
                 href="#forgot"
-                className="text-xs text-primary hover:text-accent-blue font-medium transition-colors"
+                className="text-xs text-[#2563EB] hover:underline font-medium transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
                   alert('Reset password flow triggered. Check your email for guidelines.');
@@ -233,8 +233,8 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   setPassword(e.target.value);
                   if (errors.password) setErrors({ ...errors, password: undefined });
                 }}
-                className={`w-full pl-11 pr-11 py-3 bg-white/70 border rounded-xl text-sm text-text-dark transition-all duration-200 input-glow ${
-                  errors.password ? 'border-danger-red/60 focus:border-danger-red focus:ring-danger-red/10' : 'border-border-gray'
+                className={`w-full pl-11 pr-11 py-3 bg-white border rounded-xl text-sm text-[#0A0A0A] transition-all duration-200 focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 focus:outline-none ${
+                  errors.password ? 'border-danger-red/60 focus:border-danger-red focus:ring-danger-red/10' : 'border-[#E5E7EB]'
                 }`}
               />
               <button
@@ -269,7 +269,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
             >
               <div
                 className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center transition-all duration-200 ${
-                  rememberMe ? 'bg-primary border-primary' : 'border-border-gray bg-white/80 group-hover:border-primary'
+                  rememberMe ? 'bg-[#2563EB] border-[#2563EB]' : 'border-[#E5E7EB] bg-white group-hover:border-[#2563EB]'
                 }`}
               >
                 <AnimatePresence>
@@ -285,7 +285,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
                   )}
                 </AnimatePresence>
               </div>
-              <span className="text-xs text-slate-600 font-medium select-none cursor-pointer">
+              <span className="text-xs text-[#4B5563] font-medium select-none cursor-pointer">
                 Remember this device for 30 days
               </span>
             </button>
@@ -294,7 +294,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           {/* Login Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-primary hover:bg-primary/95 text-white font-semibold rounded-xl text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
+            className="w-full py-3 bg-[#2563EB] hover:bg-[#1D4ED8] hover:scale-[1.01] text-white font-semibold rounded-xl text-sm cc-shadow-md focus:outline-none focus:ring-4 focus:ring-[#2563EB]/20 transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
           >
             <span>Sign In to Workspace</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -304,10 +304,10 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
         {/* Divider */}
         <div className="relative my-7">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border-gray"></div>
+            <div className="w-full border-t border-[#E5E7EB]"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#FAFBFD] px-4 text-slate-400 font-semibold tracking-wider">or sign in with</span>
+            <span className="bg-[#FBFCFD] px-4 text-[#9CA3AF] font-semibold tracking-wider">or sign in with</span>
           </div>
         </div>
 
@@ -316,10 +316,10 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           <button
             type="button"
             onClick={() => alert('Redirecting to Google Enterprise Single-Sign-On...')}
-            className="px-4 py-2.5 border border-border-gray hover:bg-slate-50/80 hover:border-primary/50 text-slate-600 text-xs font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
+            className="px-4 py-2.5 border border-[#E5E7EB] hover:bg-[#F3F4F6] hover:border-[#2563EB]/50 text-[#4B5563] text-xs font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
           >
             {/* Monochromatic Google SVG */}
-            <svg className="w-4.5 h-4.5 text-slate-500 group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-4.5 h-4.5 text-slate-500 group-hover:text-[#2563EB] transition-colors" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
@@ -330,10 +330,10 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           <button
             type="button"
             onClick={() => alert('Redirecting to Microsoft Azure AD Single-Sign-On...')}
-            className="px-4 py-2.5 border border-border-gray hover:bg-slate-50/80 hover:border-primary/50 text-slate-600 text-xs font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
+            className="px-4 py-2.5 border border-[#E5E7EB] hover:bg-[#F3F4F6] hover:border-[#2563EB]/50 text-[#4B5563] text-xs font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group cursor-pointer"
           >
             {/* Monochromatic Microsoft SVG */}
-            <svg className="w-4.5 h-4.5 text-slate-500 group-hover:text-primary transition-colors" viewBox="0 0 23 23" fill="currentColor">
+            <svg className="w-4.5 h-4.5 text-slate-500 group-hover:text-[#2563EB] transition-colors" viewBox="0 0 23 23" fill="currentColor">
               <path d="M0 0h11v11H0zM12 0h11v11H12zM0 12h11v11H0zM12 12h11v11H12z" />
             </svg>
             <span>Azure AD</span>
@@ -347,9 +347,9 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
             href="#admin"
             onClick={(e) => {
               e.preventDefault();
-              alert('Support channels: administrator@transitops.corp or dial extensions #9090.');
+              alert('Support channels: administrator@fleetflow.io or dial extensions #9090.');
             }}
-            className="text-primary hover:text-accent-blue underline transition-colors"
+            className="text-[#2563EB] hover:underline transition-colors"
           >
             Contact Administrator
           </a>

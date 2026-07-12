@@ -1,7 +1,7 @@
-# TransitOps — Frontend Design System & Specification
+# FleetFlow — Frontend Design System & Specification
 ### Premium SaaS Design Language · v2.0 (Senior Designer Handoff)
 
-**Product:** TransitOps — Smart Transport Operations Platform
+**Product:** FleetFlow — Smart Transport Operations Platform
 **Repository:** `FleetFlow`
 **Design register:** Apple-grade clarity · Stripe-grade precision · Linear-grade density
 **Stack:** React 19 · TypeScript · Vite · Tailwind v4 · framer-motion · lucide-react
@@ -192,7 +192,7 @@ Skeletons (not spinners) for load; empty states with line art + one CTA; `Access
 │ LEFT ~55% — Brand / narrative              │ RIGHT ~45% — Auth (Page 2)    │
 │ canvas, faint dot-grid, one soft gradient  │ paper, e1, centered           │
 │                                            │                               │
-│ ◆ TransitOps            (mark, still)      │      Sign in                  │
+│ ◆ FleetFlow             (mark, still)      │      Sign in                  │
 │                                            │                               │
 │ Display: "Run your fleet like             │                               │
 │  a control tower."                         │                               │
@@ -414,5 +414,5 @@ Flow: **Landing → Login → Dashboard**, then lateral via sidebar / ⌘K.
 
 ---
 
-*TransitOps Frontend Design System v2.0 — premium, minimal, precise. Restraint is the feature.
+*FleetFlow Frontend Design System v2.0 — premium, minimal, precise. Restraint is the feature.
 Export to PDF for the design deliverable.*

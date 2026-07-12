@@ -104,9 +104,9 @@ const TruckIllustration: React.FC = () => (
       <circle cx="162" cy="90" r="10" fill="#1E3A5F" stroke="#2563EB" strokeWidth="2" />
       <circle cx="162" cy="90" r="5" fill="#DBEAFE" />
 
-      {/* TransitOps logo on side */}
+      {/* FleetFlow logo on side */}
       <rect x="32" y="58" width="86" height="22" rx="4" fill="#2563EB" opacity="0.12" />
-      <text x="75" y="74" textAnchor="middle" fill="#2563EB" fontSize="8" fontWeight="800" fontFamily="system-ui">TRANSIT OPS</text>
+      <text x="75" y="74" textAnchor="middle" fill="#2563EB" fontSize="8" fontWeight="800" fontFamily="system-ui">FLEET FLOW</text>
 
       {/* Question mark sign */}
       <rect x="84" y="10" width="32" height="32" rx="6" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="2" />
@@ -505,7 +505,7 @@ export const NotFound404: React.FC<NotFound404Props> = ({ onNavigate, onShowToas
               </div>
               <div>
                 <h3 className="text-xs font-black text-slate-800">AI Navigation Assistant</h3>
-                <p className="text-[9.5px] text-slate-400 font-medium">Powered by TransitOps Intelligence</p>
+                <p className="text-[9.5px] text-slate-400 font-medium">Powered by FleetFlow Intelligence</p>
               </div>
             </div>
             <div className="p-5 flex-1 space-y-4">
@@ -562,7 +562,7 @@ export const NotFound404: React.FC<NotFound404Props> = ({ onNavigate, onShowToas
         >
           <div className="flex items-center space-x-2 text-[10px] font-semibold text-slate-400">
             <Truck className="w-3.5 h-3.5 text-primary/40" />
-            <span>TransitOps · Error 404 · Page Not Found · Your fleet operations continue uninterrupted.</span>
+            <span>FleetFlow · Error 404 · Page Not Found · Your fleet operations continue uninterrupted.</span>
           </div>
           <div className="flex items-center space-x-2">
             <button onClick={() => go('dashboard')} className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-xl cursor-pointer hover:bg-primary/95 transition-all flex items-center space-x-1.5">

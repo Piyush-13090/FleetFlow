@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLog
                 exit={{ opacity: 0, width: 0 }}
                 className="text-lg font-extrabold text-text-dark tracking-tight whitespace-nowrap"
               >
-                Transit<span className="text-primary font-medium">Ops</span>
+                Fleet<span className="text-primary font-medium">Flow</span>
               </motion.span>
             )}
           </AnimatePresence>

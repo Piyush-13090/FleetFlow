@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { Truck, ArrowLeft } from 'lucide-react';
 import { BackgroundPattern } from './components/BackgroundPattern';
 import { FeatureCard } from './components/FeatureCard';
 import { LoginCard } from './components/LoginCard';
 import { CommandControlLanding } from './components/CommandControlLanding';
-import { TransitOpsDashboard } from './components/dashboard/TransitOpsDashboard';
+import { FleetFlowDashboard } from './components/dashboard/FleetFlowDashboard';
 import { apiFetch, clearSessionToken, getSessionToken } from './lib/api';
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
   }, []);
 
   if (isAuthenticated) {
-    return <TransitOpsDashboard onLogout={() => {
+    return <FleetFlowDashboard onLogout={() => {
       clearSessionToken();
       setIsAuthenticated(false);
     }} />;
@@ -37,44 +37,62 @@ function App() {
   if (!showLogin) {
     return <CommandControlLanding onEnter={() => setShowLogin(true)} />;
   }
-
   return (
     <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="min-h-screen w-full bg-bg-main relative flex flex-col lg:flex-row overflow-x-hidden font-sans select-none"
+      className="cc-root min-h-screen w-full bg-[#FBFCFD] text-[#0A0A0A] relative flex flex-col lg:flex-row overflow-x-hidden select-none"
     >
+      {/* Back Button */}
+      <button
+        onClick={() => setShowLogin(false)}
+        className="absolute top-6 right-6 z-20 flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white text-xs font-semibold text-[#4B5563] hover:text-[#0A0A0A] hover:bg-[#F3F4F6] transition-all cc-shadow-sm cursor-pointer"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Home
+      </button>
+      {/* CSS style tokens for display styling */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+        .cc-root { font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; }
+        .cc-display { font-family: 'Space Grotesk','Inter',system-ui,sans-serif; letter-spacing: -0.02em; line-height: 1.05; }
+        .cc-glass { background: rgba(251,252,253,0.72); backdrop-filter: saturate(140%) blur(14px); -webkit-backdrop-filter: saturate(140%) blur(14px); }
+        .cc-shadow-sm { box-shadow: 0 1px 2px rgba(10,15,30,0.04), 0 1px 3px rgba(10,15,30,0.06); }
+        .cc-shadow-md { box-shadow: 0 4px 12px rgba(10,15,30,0.06), 0 2px 4px rgba(10,15,30,0.04); }
+        .cc-shadow-lg { box-shadow: 0 24px 60px rgba(10,15,30,0.12), 0 6px 16px rgba(10,15,30,0.06); }
+        .cc-grain { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); }
+      `}</style>
+
+      {/* grain + ambient blobs */}
+      <div className="cc-grain pointer-events-none fixed inset-0 opacity-[0.025] z-[1]" />
+      <div className="pointer-events-none fixed -top-40 -left-40 w-[560px] h-[560px] rounded-full bg-[#2563EB]/[0.06] blur-[130px] z-0" />
+      <div className="pointer-events-none fixed top-1/3 -right-40 w-[620px] h-[620px] rounded-full bg-[#8B5CF6]/[0.05] blur-[150px] z-0" />
+
       {/* Background patterns and canvas dots */}
       <BackgroundPattern />
 
       {/* LEFT PANEL: 40% Screen Width on Desktop */}
-      <div className="w-full lg:w-[40%] xl:w-[38%] flex flex-col justify-between p-8 sm:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-gray/70 relative z-10 bg-white/40 backdrop-blur-[2px]">
+      <div className="w-full lg:w-[40%] xl:w-[38%] flex flex-col justify-between p-8 sm:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-[#E5E7EB] relative z-10 cc-glass shadow-lg">
         {/* Floating Logo Header */}
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
-          className="flex items-center space-x-3 cursor-pointer select-none"
+          className="flex items-center gap-2.5 cursor-pointer select-none"
         >
-          {/* Custom geometric logo mark (interlocking roads/nodes) */}
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25 relative overflow-hidden">
-            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-.554-8.243-1.582" />
-            </svg>
-          </div>
-          <span className="text-xl font-extrabold text-text-dark tracking-tight">
-            Transit<span className="text-primary font-medium">Ops</span>
+          <span className="w-8 h-8 rounded-[8px] bg-[#0A0A0A] flex items-center justify-center">
+            <Truck className="w-[18px] h-[18px] text-white" strokeWidth={2} />
           </span>
+          <span className="cc-display text-[19px] font-bold text-[#0A0A0A]">FleetFlow</span>
         </motion.div>
 
         {/* Content Area */}
         <div className="my-10 lg:my-auto space-y-8">
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-text-dark leading-tight tracking-tight">
-              Smart Transport Operations Platform
+          <div className="space-y-4">
+            <h1 className="cc-display text-[36px] sm:text-[44px] font-bold text-[#0A0A0A] leading-tight">
+              Fleet operations,<br /> finally in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#7C3AED]">focus.</span>
             </h1>
-            <p className="text-sm sm:text-base text-slate-500 font-normal leading-relaxed">
-              Manage fleets, drivers, dispatch, maintenance and operational analytics from one intelligent platform.
+            <p className="text-sm sm:text-base text-[#4B5563] font-normal leading-relaxed">
+              Manage fleets, drivers, dispatch, maintenance and operational analytics in one calm, precise command center.
             </p>
           </div>
 
@@ -98,19 +116,16 @@ function App() {
           </div>
 
           {/* Verification Badges */}
-          <div className="pt-2 flex flex-wrap gap-x-6 gap-y-2">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 bg-white/70 px-3 py-1.5 rounded-full border border-border-gray shadow-sm">
-              <CheckCircle className="w-4 h-4 text-success-green" />
-              <span>Secure JWT Auth</span>
-            </div>
-            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 bg-white/70 px-3 py-1.5 rounded-full border border-border-gray shadow-sm">
-              <CheckCircle className="w-4 h-4 text-success-green" />
-              <span>Role Based Access</span>
-            </div>
-            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 bg-white/70 px-3 py-1.5 rounded-full border border-border-gray shadow-sm">
-              <CheckCircle className="w-4 h-4 text-success-green" />
-              <span>Enterprise Ready</span>
-            </div>
+          <div className="pt-2 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E7EB] bg-white text-[11px] font-medium text-[#4B5563] cc-shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" /> Secure JWT Auth
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E7EB] bg-white text-[11px] font-medium text-[#4B5563] cc-shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" /> Role Based Access
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E7EB] bg-white text-[11px] font-medium text-[#4B5563] cc-shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" /> Enterprise Ready
+            </span>
           </div>
         </div>
 
@@ -138,7 +153,7 @@ function App() {
 
         {/* Small Legal text at bottom left */}
         <div className="text-[10px] text-slate-400 font-medium">
-          © {new Date().getFullYear()} TransitOps Inc. All systems operational.
+          © {new Date().getFullYear()} FleetFlow Inc. All systems operational.
         </div>
       </div>
 

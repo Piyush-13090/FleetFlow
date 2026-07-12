@@ -1,7 +1,7 @@
 {
-  "name": "transitops-backend",
+  "name": "fleetflow-backend",
   "version": "1.0.0",
-  "description": "TransitOps Fleet Operations Platform Express API server",
+  "description": "FleetFlow Fleet Operations Platform Express API server",
   "main": "server.js",
   "type": "module",
   "scripts": {

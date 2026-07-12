@@ -1,8 +1,8 @@
-# TransitOps — Smart Transport Operations Platform
+# FleetFlow — Smart Transport Operations Platform
 ### Final Project Document
 
 **Repository:** `FleetFlow`
-**Product name:** TransitOps
+**Product name:** FleetFlow
 **Type:** Hackathon deliverable (8-hour build) — Transport / Fleet Operations Platform
 **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4 (frontend) · Node.js + Express (backend)
 **Date:** 2026-07-12
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-TransitOps is a centralized web platform that digitizes the full lifecycle of transport
+FleetFlow is a centralized web platform that digitizes the full lifecycle of transport
 operations for logistics companies — replacing spreadsheets and manual logbooks with a single
 system for **vehicles, drivers, dispatch, maintenance, fuel/expense tracking, and analytics**.
 
@@ -33,7 +33,7 @@ visibility they previously lacked.
 Authentication is via email + password, returning a mock JWT and the user's role. Only
 authenticated users reach the dashboard.
 
-> **Demo credentials:** `admin@transitops.com` / `password123` → logs in as *Piyush Sharma (Fleet Manager)*.
+> **Demo credentials:** `admin@fleetflow.io` / `password123` → logs in as *Piyush Sharma (Fleet Manager)*.
 
 ---
 
@@ -48,7 +48,7 @@ authenticated users reach the dashboard.
 ```
 
 - **Frontend** (`/frontend`): SPA. `App.tsx` renders the login experience, then swaps to
-  `TransitOpsDashboard` on auth. Vite dev server proxies `/api` → `http://localhost:3001`.
+  `FleetFlowDashboard` on auth. Vite dev server proxies `/api` → `http://localhost:3001`.
 - **Backend** (`/backend`): Express server (`server.js`) with an in-memory database
   (`vehicles`, `drivers`, `trips`, `notifications`, `activityTimeline`). No external DB — state
   resets on restart (appropriate for a hackathon demo).
@@ -198,7 +198,7 @@ npm install
 npm run dev            # → http://localhost:5173  (proxies /api → :3001)
 ```
 
-Open the frontend URL and log in with `admin@transitops.com` / `password123`.
+Open the frontend URL and log in with `admin@fleetflow.io` / `password123`.
 
 **Build for production:** `cd frontend && npm run build` (output in `frontend/dist`).
 
@@ -238,4 +238,4 @@ Open the frontend URL and log in with `admin@transitops.com` / `password123`.
 
 ---
 
-*Generated as the consolidated final project document for the TransitOps / FleetFlow hackathon build.*
+*Generated as the consolidated final project document for the FleetFlow hackathon build.*

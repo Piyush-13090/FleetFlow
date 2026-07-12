@@ -30,7 +30,7 @@ import { AccessDenied } from './AccessDenied';
 import { NotFound404 } from './NotFound404';
 import { apiFetch } from '../../lib/api';
 
-interface TransitOpsDashboardProps {
+interface FleetFlowDashboardProps {
   onLogout: () => void;
 }
 
@@ -136,7 +136,7 @@ const initialNotifications: NotificationItem[] = [
   }
 ];
 
-export const TransitOpsDashboard: React.FC<TransitOpsDashboardProps> = ({ onLogout }) => {
+export const FleetFlowDashboard: React.FC<FleetFlowDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({

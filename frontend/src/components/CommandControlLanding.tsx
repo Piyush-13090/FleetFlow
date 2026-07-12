@@ -262,15 +262,10 @@ export const CommandControlLanding: React.FC<CommandControlLandingProps> = ({ on
             <span className="w-8 h-8 rounded-[8px] bg-[#0A0A0A] flex items-center justify-center">
               <Truck className="w-[18px] h-[18px] text-white" strokeWidth={2} />
             </span>
-            <span className="cc-display text-[19px] font-bold">TransitOps</span>
+            <span className="cc-display text-[19px] font-bold">FleetFlow</span>
           </a>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-[#4B5563]">
-            {['Platform', 'Automation', 'Analytics', 'Pricing'].map((l) => (
-              <a key={l} href={`#${l.toLowerCase()}`} className="hover:text-[#0A0A0A] transition-colors">{l}</a>
-            ))}
-          </nav>
           <button onClick={onEnter} className="cc-btn min-h-[44px] px-5 rounded-[12px] bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1D4ED8] hover:scale-[1.02] transition-[background,transform] cc-shadow-sm">
-            Request a demo
+            Login
           </button>
           <motion.div style={{ scaleX: scrollYProgress }} className="absolute left-5 right-5 -bottom-[1px] h-[2px] origin-left rounded-full bg-[#2563EB]" />
         </motion.nav>
@@ -415,7 +410,7 @@ export const CommandControlLanding: React.FC<CommandControlLandingProps> = ({ on
               <span className="w-3 h-3 rounded-full bg-[#F87171]" />
               <span className="w-3 h-3 rounded-full bg-[#FBBF24]" />
               <span className="w-3 h-3 rounded-full bg-[#34D399]" />
-              <span className="ml-4 text-[11px] text-[#9CA3AF]">app.transitops.com/dashboard</span>
+              <span className="ml-4 text-[11px] text-[#9CA3AF]">app.fleetflow.io/dashboard</span>
             </div>
             {/* faux dashboard */}
             <div className="p-5 bg-[#FBFCFD]">
@@ -800,7 +795,7 @@ export const CommandControlLanding: React.FC<CommandControlLandingProps> = ({ on
               <span className="w-8 h-8 rounded-[8px] bg-[#0A0A0A] flex items-center justify-center">
                 <Truck className="w-[18px] h-[18px] text-white" strokeWidth={2} />
               </span>
-              <span className="cc-display text-[18px] font-bold">TransitOps</span>
+              <span className="cc-display text-[18px] font-bold">FleetFlow</span>
             </div>
             <p className="mt-4 text-[13px] text-[#9CA3AF] max-w-[220px]">Smart transport operations for modern logistics teams.</p>
           </div>
@@ -822,7 +817,7 @@ export const CommandControlLanding: React.FC<CommandControlLandingProps> = ({ on
           </div>
         </div>
         <div className="mx-auto max-w-6xl mt-12 pt-6 border-t border-[#E5E7EB] text-[12px] text-[#9CA3AF]">
-          © 2026 TransitOps Technologies Inc. All rights reserved.
+          © 2026 FleetFlow Technologies Inc. All rights reserved.
         </div>
       </footer>
     </div>

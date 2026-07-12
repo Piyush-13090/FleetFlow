@@ -444,7 +444,7 @@ export const AddEditDriver: React.FC<AddEditDriverProps> = ({
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
                       <input 
                         type="email" 
-                        placeholder="e.g. robert@transitops.com" 
+                        placeholder="e.g. robert@fleetflow.io" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full bg-slate-50 border border-border-gray rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:outline-none"

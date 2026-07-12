@@ -143,7 +143,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
   // Profile state
   const [firstName, setFirstName] = useState('Alex');
   const [lastName, setLastName] = useState('Thompson');
-  const [email, setEmail] = useState('alex.thompson@transitops.com');
+  const [email, setEmail] = useState('alex.thompson@fleetflow.io');
   const [phone, setPhone] = useState('+1 (312) 555-0192');
   const [department, setDepartment] = useState('Fleet Operations');
   const [designation, setDesignation] = useState('Fleet Manager');
@@ -513,7 +513,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
 
               {/* ── APPEARANCE ── */}
               {activeSection === 'appearance' && (
-                <SectionCard title="Appearance & Display" subtitle="Customize how the TransitOps interface looks and feels.">
+                <SectionCard title="Appearance & Display" subtitle="Customize how the FleetFlow interface looks and feels.">
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <SelectField label="Font Size" value={fontSize} onChange={v => { setFontSize(v); markDirty(); }} options={['Small', 'Medium', 'Large']} />
@@ -665,7 +665,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
 
               {/* ── WORKSPACE ── */}
               {activeSection === 'workspace' && (
-                <SectionCard title="Workspace Configuration" subtitle="Global settings for your TransitOps organization.">
+                <SectionCard title="Workspace Configuration" subtitle="Global settings for your FleetFlow organization.">
                   <div className="grid grid-cols-2 gap-4">
                     <SelectField label="Fleet Region" value="Midwest" onChange={() => markDirty()} options={['Midwest', 'Northeast', 'Southeast', 'Southwest', 'West']} />
                     <SelectField label="Fleet Size (Visible)" value="Full Fleet" onChange={() => markDirty()} options={['Full Fleet', 'My Region Only', 'Custom']} />
@@ -681,7 +681,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
                   <div className="space-y-4 max-w-lg">
                     {[
                       { label: 'API Key', value: apiKeyVisible ? 'sk_live_transit_a8f3d2b1c9e7f4a21...' : '••••••••••••••••••••••••••••••', copy: true, toggle: true },
-                      { label: 'Webhook URL', value: 'https://hooks.transitops.com/webhooks/7f4a21', copy: true, toggle: false },
+                      { label: 'Webhook URL', value: 'https://hooks.fleetflow.io/webhooks/7f4a21', copy: true, toggle: false },
                       { label: 'Access Token', value: 'Bearer eyJhbGciOiJIUzI1NiIs...', copy: true, toggle: false },
                     ].map(field => (
                       <div key={field.label} className="space-y-1.5">
@@ -751,10 +751,10 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
 
               {/* ── SUPPORT ── */}
               {activeSection === 'support' && (
-                <SectionCard title="Help & Support Center" subtitle="Get help, report issues, or contact the TransitOps support team.">
+                <SectionCard title="Help & Support Center" subtitle="Get help, report issues, or contact the FleetFlow support team.">
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { title: 'Documentation', desc: 'Browse the full TransitOps user guide and API docs.', icon: '📖', action: 'Open Docs' },
+                      { title: 'Documentation', desc: 'Browse the full FleetFlow user guide and API docs.', icon: '📖', action: 'Open Docs' },
                       { title: 'Report an Issue', desc: 'Submit a bug report or feature request to our team.', icon: '🐛', action: 'Report Issue' },
                       { title: 'Contact Administrator', desc: 'Reach out to your system admin for access or account help.', icon: '👨‍💼', action: 'Send Message' },
                       { title: 'System Status', desc: 'Check live service availability and uptime status.', icon: '🟢', action: 'View Status' },
@@ -771,7 +771,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onShowToast })
                   <div className="mt-5 p-4 bg-blue-50/40 border border-primary/20 rounded-xl flex items-center space-x-4">
                     <Sparkles className="w-5 h-5 text-primary shrink-0" />
                     <div>
-                      <h4 className="text-[11.5px] font-black text-slate-700">TransitOps AI Assistant</h4>
+                      <h4 className="text-[11.5px] font-black text-slate-700">FleetFlow AI Assistant</h4>
                       <p className="text-[10px] text-slate-500 font-medium">Ask the AI assistant anything about your fleet, reports, or platform settings.</p>
                     </div>
                     <button onClick={() => onShowToast('Opening AI Assistant...')} className="ml-auto px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-xl cursor-pointer shrink-0">Ask AI</button>

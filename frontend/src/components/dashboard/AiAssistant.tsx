@@ -28,7 +28,7 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'ai',
-      text: 'Hello! I am your TransitOps Assistant. I can help dispatch vehicles, look up driver statuses, or log maintenance requests. How can I help you today?',
+      text: 'Hello! I am your FleetFlow Assistant. I can help dispatch vehicles, look up driver statuses, or log maintenance requests. How can I help you today?',
       timestamp: 'Just now'
     }
   ]);
@@ -116,7 +116,7 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold leading-none">TransitOps AI</h4>
+                  <h4 className="text-xs font-bold leading-none">FleetFlow AI</h4>
                   <span className="text-[9px] text-blue-100 font-medium">Fleet Dispatch Assistant</span>
                 </div>
               </div>
